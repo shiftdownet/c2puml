@@ -1,0 +1,74 @@
+@startuml
+
+$start_component("SystemService")
+$start_module("Main")
+$start_func("main")
+!procedure $main() 
+    $step("Initialize stack pointer")
+    $step("Initialize .bss")
+    $step("Initialize .data")
+    $call("Os_Start")
+!endprocedure
+
+$start_module("Os")
+$start_func("Os_Start")
+!procedure $Os_Start()
+    $loop()
+        $call("ActivateTaskWhenTimerElapsed")
+    $endloop()
+    $return("success")
+!endprocedure
+
+$start_func("ActivateTaskWhenTimerElapsed")
+!procedure $ActivateTaskWhenTimerElapsed()
+    $if("elapsed")
+        $call("User_Entry")
+        $step("timer=0")
+    $else()
+        $step("timer++")
+    $endif()
+!endprocedure
+
+$start_component("UserApplication")
+$start_module("AppManager")
+$start_func("User_Entry")
+!procedure $User_Entry()
+    $call("SomeKeysArePressed")
+    $if("isPressed is true")
+        $call("GetPressedKeys")
+    $endif()
+    $call("UpdateDisplay")
+!endprocedure
+
+$start_component("Device")
+$start_module("Keyboard")
+$start_func("SomeKeysArePressed")
+!procedure $SomeKeysArePressed()
+    $if("get_system_key_info()")
+        $step("isPressed = true")
+    $else()
+        $step("isPressed = false")
+    $endif()
+    $return("isPressed")
+!endprocedure
+
+$start_func("GetPressedKeys")
+!procedure $GetPressedKeys()
+    $step("Call system service")
+    $return("Pressed key")
+!endprocedure
+
+$start_module("Monitor")
+$start_func("UpdateDisplay")
+!procedure $UpdateDisplay()
+    $step("Call system service")
+!endprocedure
+
+
+' ボックスを描画する
+$box()
+
+' mainからコールする
+$call("main")
+
+@enduml

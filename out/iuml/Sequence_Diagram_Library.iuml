@@ -1,187 +1,244 @@
 @startuml
 
-'skinparam SequenceArrowThickness 1
-'skinparam EntityBorderColor #00000000
-'skinparam SequenceLifeLineBorderColor #00000033
-'skinparam NoteBorderThickness 0
-'skinparam NoteBackgroundColor #00000000
-'skinparam lifelineStrategy solid
-'autoactivate on
+'#=============================================================================
+'# Skin setting
+'#=============================================================================
+' 下記設定を前提にplantumlを生成しています
+!pragma teoz true
+hide unlinked
 
-' internal
-!$currentModule_ = "driver"
-!$currentFunc_   = "driver"
-!$preModule_     = "driver"
-!$preFunc_       = "driver"
-!$callstack_ = 0
+'#=============================================================================
+'# include modules
+'#=============================================================================
+' 配列構造を実現するライブラリ
+!include ./array.iuml
 
-' user config
-!$discribeLevel = "module"
-!$isShowReturnAsString = "true"
-!$returnPrefix = "return "
-!$omit_call_on_module_mode = "false"
-!$omit_alt_on_module_mode = "false"
-!$omit_loop_on_module_mode = "false"
-!$omit_step_on_module_mode = "false"
-!$callstack_max = 1000
+' スタック構造を実現するライブラリ
+!include ./stack.iuml
 
-!function $discribeConditionForAlt()
-    !if ( ( $discribeLevel == "module" ) && ( $omit_alt_on_module_mode == "true" ) )
-        !return %false()
-    !endif
-    !return %true()
-!endfunction
+' 描画対象のオブジェクトを選択するライブラリ
+!include ./select_object.iuml
 
-!function $discribeConditionForLoop()
-    !if ( ( $discribeLevel == "module" ) && ( $omit_loop_on_module_mode == "true" ) )
-        !return %false()
-    !endif
-    !return %true()
-!endfunction
+' plantumlの構文に従ってテキストを生成するライブラリ
+!include ./plantuml.iuml
 
-!function $discribeConditionForStep()
-    !if ( ( $discribeLevel == "module" ) && ( $omit_step_on_module_mode == "true" ) )
-        !return %false()
-    !endif
-    !return %true()
-!endfunction
-
-!procedure $module_name( $name )
-    ' シーケンスを描画する
-    !if ( $discribeLevel == "func" )
-        $preFunc_ -> $currentFunc_ ++ : $currentFunc_()
-    !else
-        !if ( ( $omit_call_on_module_mode == "false" ) || ( $currentModule_ != $name ) )
-            $currentModule_ -> $name ++ : $currentFunc_()
-        !endif
-    !endif
-    !$currentModule_ = $name
-!endprocedure
-
+'#=============================================================================
+'# Provided interfaces
+'#=============================================================================
+'#-------------------------------------------------
+'# 実装コードを定義するAPI
+'#-------------------------------------------------
+' 関数をコールする
 !procedure $call( $func )
-    ' プッシュ
-    !$a_prepreModule = $preModule_
-    !$a_prepreFunc_   = $preFunc_
-    !$a_preModule    = $currentModule_
-    !$a_preFunc_      = $currentFunc_
+    ' 呼び出しを描画
+    $generate_call_( $to=$func, $message=$func )
 
-    ' 実行
-    !$preModule_      = $currentModule_
-    !$preFunc_        = $currentFunc_
-    !$currentFunc_    = $func
+    ' スタックを進める
+    $inc_stack_()
 
-    !if ( $callstack_ < $callstack_max )
-        !$callstack_ = $callstack_ + 1
-        !if %function_exists( "$" + $func )
-            %invoke_procedure( "$" + $func )
-        !else
-            $module_name("Other")
-        !endif
-        !$callstack_ = $callstack_ - 1
+    ' スタック：関数名
+    $set_value_in_current_stack( "func", $func )
+    ' スタック：このactivationの中でreturnが呼ばれたか
+    $set_value_in_current_stack( "return_called", %false() )
+    ' スタック：既にdeactivateされたか
+    $set_value_in_current_stack( "already_inactivated", %false() )
 
-    !else
-        !assert %false() : "stack overflow. please increse the 'callstack_max'"
+    ' 実際の関数呼び出し
+    !if %function_exists( "$" + $func )
+        %invoke_procedure( "$" + $func )
     !endif
 
-    $actual_return()
+    ' 関数終了
+    $generate_function_end_()
 
-    ' ポップ
-    !$currentModule_  = $a_preModule
-    !$currentFunc_    = $a_preFunc_
-    !$preModule_      = $a_prepreModule
-    !$preFunc_        = $a_prepreFunc_
+    ' スタックを戻す
+    $dec_stack_()
 !endprocedure
 
+' returnする
 !procedure $return($expression="")
-    !if ( $discribeLevel == "func" )
-        $currentFunc_ --> $preFunc_ : $returnPrefix $expression
-    !else
-        !if ( ( $omit_call_on_module_mode == "false" ) || ( $currentModule_ != $preModule_ ) )
-            $currentModule_ --> $preModule_ : $returnPrefix $expression
-        !endif
-    !endif
+    $generate_return_( $expression )
 !endprocedure
 
+' stepを実行する
 !procedure $step($content)
-    !if ( $discribeConditionForStep() )
-        hnote over $currentModule_ : $content
-    !endif
+    $generate_step_($content)
 !endprocedure
 
+' loopを開始する
 !procedure $loop($information="infinity")
-    !if ( $discribeConditionForLoop() )
-        loop $information
-    !endif
+    $generate_loop_("loop " + $information)
 !endprocedure
 
+' loopを終了する
 !procedure $endloop()
-    !if ( $discribeConditionForLoop() )
-        end
-    !endif
+    $generate_loop_("end")
 !endprocedure
 
+' ifを開始する
 !procedure $if($condition)
-    !if ( $discribeConditionForAlt() )
-        alt if ($condition)
-    !endif
+    $generate_alt_("alt if " + $condition)
 !endprocedure
 
+' else-ifを開始する
 !procedure $elseif($condition="")
-    !if ( $discribeConditionForAlt() )
-        else else-if ($condition)
-    !endif
+    $generate_alt_("else else-if " + $condition)
 !endprocedure
 
+' elseを開始する
 !procedure $else()
-    !if ( $discribeConditionForAlt() )
-        else else
-    !endif
+    $generate_alt_("else else")
 !endprocedure
 
+' ifを終了する
 !procedure $endif()
-    !if ( $discribeConditionForAlt() )
-        end
-    !endif
+    $generate_alt_("end")
 !endprocedure
 
+' switchを開始する
 !procedure $switch($expression)
-    !if ( $discribeConditionForAlt() )
-        alt switch ($expression)
-    !endif
+    $generate_alt_("alt switch " + $expression)
 !endprocedure
 
+' caseラベルを定義する
 !procedure $case($condition="")
-    !if ( $discribeConditionForAlt() )
-        else case ($condition)
-    !endif
+    $generate_alt_("else case " + $condition)
 !endprocedure
 
+' defaultラベルを定義する
 !procedure $default()
-    !if ( $discribeConditionForAlt() )
-        else default
-    !endif
+    $generate_alt_("else default")
 !endprocedure
 
+' switchを終了する
 !procedure $endswitch()
-    !if ( $discribeConditionForAlt() )
-        end
-    !endif
+    $generate_alt_("end")
 !endprocedure
 
-
-!procedure $actual_return($expression="")
-    !if ( ( $omit_call_on_module_mode == "false" ) || ( $currentModule_ != $preModule_ ) )
-        'deactivate
-    !endif
-
-    !if ( $discribeLevel == "func" )
-        $currentFunc_ -[#ffffff00]-> $preFunc_ -- : <size:0>return
-    !else
-        !if ( ( $omit_call_on_module_mode == "false" ) || ( $currentModule_ != $preModule_ ) )
-            $currentModule_ -[#ffffff00]-> $preModule_ -- : <size:0>return
-        !endif
-    !endif
+'#-------------------------------------------------
+'# ソフトウェアエレメントの階層構造を定義・描画するAPI
+'#-------------------------------------------------
+' コンポーネントの開始を宣言する
+!procedure $start_component($component)
+    %set_variable_value("current_component", $component )
 !endprocedure
 
+' モジュールの開始を宣言する
+!procedure $start_module($module)
+    %set_variable_value("current_module", $module )
+    $set_component_of($module, %get_variable_value("current_component"))
+!endprocedure
+
+' 関数の開始を宣言する
+!procedure $start_func($func)
+    $set_module_of($func, %get_variable_value("current_module"))
+!endprocedure
+
+' 関数$funcのモジュール名$moduleを設定する
+!procedure $set_module_of($func, $module)
+    %set_variable_value($func + ".module", $module )
+
+    ' module_listに存在しないmoduleであれば登録する
+    !if %not($array_has_specific_data( "module_list", $module ))
+        $push_to( "module_list", $module )
+    !endif
+    ' moduleに関数を登録する
+    $push_to( "func_list_of_" + $module , $func )
+!endprocedure
+
+' モジュール$moduleのコンポーネント名$componentを設定する
+!procedure $set_component_of($module, $component) 
+    %set_variable_value($module + ".component", $component )
+
+    ' component_listに存在しないcomponentであれば登録する
+    !if %not($array_has_specific_data( "component_list", $component ))
+        $push_to( "component_list", $component )
+    !endif
+    ' componentにmoduleを登録する
+    $push_to( "module_list_of_" + $component , $module )
+!endprocedure
+
+' $set_xxx_of の設定に基づいて boxを描画する
+!procedure $box()
+    participant $sdlConf_entry_point
+    $iterate_array( "component_list", "$callback_of_component_list" )
+    '$iterate_array( "module_list", "$callback_of_module_list" )
+!endprocedure
+
+'#-------------------------------------------------
+'# 描画方法を指定するAPI及びコンフィグ(ユーザplantumlコードから上書きしてください)
+'#-------------------------------------------------
+'# エントリポイント名を指定します
+!$sdlConf_entry_point = "Driver"
+
+'# 描画の粒度を指定します。
+'#      func ... 関数レベル
+'#      module ... モジュールレベル
+'#      component ... コンポーネントレベル
+!$sdlConf_display_level = "func"
+
+'# $sdlConf_display_level が func以外に設定されている時でも、ここで指定したエレメントは個別のライフラインとして描画します
+!$sdlConf_display_lifeline_focused_element = "not specified"
+
+'# $sdlConf_display_lifeline_focused_element で componentが指定されているときに、描画するライフラインの粒度を指定します( func or module が指定可能です )
+!$sdlConf_display_lifeline_focused_element_level = "not specified"
+
+'# $sdlConf_display_level が func以外に設定されている時、sdlConf_display_lifeline_focused_elementでフォーカスされていないエレメントを詳細に描画するか選択できます。
+'# 1. call
+!$sdlConf_display_detail_unfocused_element_for_call = %false()
+'# 2. alt
+!$sdlConf_display_detail_unfocused_element_for_alt = %false()
+'# 3. loop
+!$sdlConf_display_detail_unfocused_element_for_loop = %false()
+'# 3. step
+!$sdlConf_display_detail_unfocused_element_for_step = %false()
+
+' 空のreturnを描画するならtrueを設定してください
+!$sdlConf_display_void_return = %true()
+
+' 最初にreturnが現れた時点でライフラインをinactiveにする設定を有効にする場合trueを設定してください
+!$sdlConf_inactivate_in_first_return = %true()
+
+' 同じライフライン上の場合returnをメッセージ(矢印)ではなく文字列で表示する場合はtrueを設定してください
+!$sdlConf_on_same_lifeline_return_is_displayed_as_string = %true()
+
+' 関数のステレオタイプ(1文字)を指定できます
+!$sdlConf_stereotype_icon_of_func = "F"
+
+' モジュールのステレオタイプ(1文字)を指定できます
+!$sdlConf_stereotype_icon_of_module = "U"
+
+' コンポーネントのステレオタイプ(1文字)を指定できます
+!$sdlConf_stereotype_icon_of_component = "C"
+
+' 関数のステレオタイプの色を指定できます
+!$sdlConf_stereotype_color_of_func = "#ADD1B2"
+
+' モジュールのステレオタイプの色を指定できます
+!$sdlConf_stereotype_color_of_module = "#FFF200"
+
+' コンポーネントのステレオタイプの色を指定できます
+!$sdlConf_stereotype_color_of_component = "#B2ADD1"
+
+'#=============================================================================
+'# Internal functions
+'#=============================================================================
+!procedure $callback_of_component_list( $component_name )
+    box $component_name #FloralWhite
+        participant $component_name <<($sdlConf_stereotype_icon_of_component, $sdlConf_stereotype_color_of_func)>>
+        $iterate_array( "module_list_of_" + $component_name , "$callback_of_module_list_from_component" )
+    end box
+!endprocedure
+
+!procedure $callback_of_module_list_from_component( $module_name )
+    box $module_name #WhiteSmoke
+        participant $module_name <<($sdlConf_stereotype_icon_of_module,$sdlConf_stereotype_color_of_module)>>
+        $iterate_array( "func_list_of_" + $module_name , "$callback_of_func_list_from_module" )
+    end box
+!endprocedure
+
+!procedure $callback_of_func_list_from_module( $func_name )
+    participant $func_name <<($sdlConf_stereotype_icon_of_func ,$sdlConf_stereotype_color_of_component)>>
+!endprocedure
 
 @enduml
