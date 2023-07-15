@@ -1,0 +1,187 @@
+@startuml
+
+'skinparam SequenceArrowThickness 1
+'skinparam EntityBorderColor #00000000
+'skinparam SequenceLifeLineBorderColor #00000033
+'skinparam NoteBorderThickness 0
+'skinparam NoteBackgroundColor #00000000
+'skinparam lifelineStrategy solid
+'autoactivate on
+
+' internal
+!$currentModule_ = "driver"
+!$currentFunc_   = "driver"
+!$preModule_     = "driver"
+!$preFunc_       = "driver"
+!$callstack_ = 0
+
+' user config
+!$discribeLevel = "module"
+!$isShowReturnAsString = "true"
+!$returnPrefix = "return "
+!$omit_call_on_module_mode = "false"
+!$omit_alt_on_module_mode = "false"
+!$omit_loop_on_module_mode = "false"
+!$omit_step_on_module_mode = "false"
+!$callstack_max = 1000
+
+!function $discribeConditionForAlt()
+    !if ( ( $discribeLevel == "module" ) && ( $omit_alt_on_module_mode == "true" ) )
+        !return %false()
+    !endif
+    !return %true()
+!endfunction
+
+!function $discribeConditionForLoop()
+    !if ( ( $discribeLevel == "module" ) && ( $omit_loop_on_module_mode == "true" ) )
+        !return %false()
+    !endif
+    !return %true()
+!endfunction
+
+!function $discribeConditionForStep()
+    !if ( ( $discribeLevel == "module" ) && ( $omit_step_on_module_mode == "true" ) )
+        !return %false()
+    !endif
+    !return %true()
+!endfunction
+
+!procedure $module_name( $name )
+    ' シーケンスを描画する
+    !if ( $discribeLevel == "func" )
+        $preFunc_ -> $currentFunc_ ++ : $currentFunc_()
+    !else
+        !if ( ( $omit_call_on_module_mode == "false" ) || ( $currentModule_ != $name ) )
+            $currentModule_ -> $name ++ : $currentFunc_()
+        !endif
+    !endif
+    !$currentModule_ = $name
+!endprocedure
+
+!procedure $call( $func )
+    ' プッシュ
+    !$a_prepreModule = $preModule_
+    !$a_prepreFunc_   = $preFunc_
+    !$a_preModule    = $currentModule_
+    !$a_preFunc_      = $currentFunc_
+
+    ' 実行
+    !$preModule_      = $currentModule_
+    !$preFunc_        = $currentFunc_
+    !$currentFunc_    = $func
+
+    !if ( $callstack_ < $callstack_max )
+        !$callstack_ = $callstack_ + 1
+        !if %function_exists( "$" + $func )
+            %invoke_procedure( "$" + $func )
+        !else
+            $module_name("Other")
+        !endif
+        !$callstack_ = $callstack_ - 1
+
+    !else
+        !assert %false() : "stack overflow. please increse the 'callstack_max'"
+    !endif
+
+    $actual_return()
+
+    ' ポップ
+    !$currentModule_  = $a_preModule
+    !$currentFunc_    = $a_preFunc_
+    !$preModule_      = $a_prepreModule
+    !$preFunc_        = $a_prepreFunc_
+!endprocedure
+
+!procedure $return($expression="")
+    !if ( $discribeLevel == "func" )
+        $currentFunc_ --> $preFunc_ : $returnPrefix $expression
+    !else
+        !if ( ( $omit_call_on_module_mode == "false" ) || ( $currentModule_ != $preModule_ ) )
+            $currentModule_ --> $preModule_ : $returnPrefix $expression
+        !endif
+    !endif
+!endprocedure
+
+!procedure $step($content)
+    !if ( $discribeConditionForStep() )
+        hnote over $currentModule_ : $content
+    !endif
+!endprocedure
+
+!procedure $loop($information="infinity")
+    !if ( $discribeConditionForLoop() )
+        loop $information
+    !endif
+!endprocedure
+
+!procedure $endloop()
+    !if ( $discribeConditionForLoop() )
+        end
+    !endif
+!endprocedure
+
+!procedure $if($condition)
+    !if ( $discribeConditionForAlt() )
+        alt if ($condition)
+    !endif
+!endprocedure
+
+!procedure $elseif($condition="")
+    !if ( $discribeConditionForAlt() )
+        else else-if ($condition)
+    !endif
+!endprocedure
+
+!procedure $else()
+    !if ( $discribeConditionForAlt() )
+        else else
+    !endif
+!endprocedure
+
+!procedure $endif()
+    !if ( $discribeConditionForAlt() )
+        end
+    !endif
+!endprocedure
+
+!procedure $switch($expression)
+    !if ( $discribeConditionForAlt() )
+        alt switch ($expression)
+    !endif
+!endprocedure
+
+!procedure $case($condition="")
+    !if ( $discribeConditionForAlt() )
+        else case ($condition)
+    !endif
+!endprocedure
+
+!procedure $default()
+    !if ( $discribeConditionForAlt() )
+        else default
+    !endif
+!endprocedure
+
+!procedure $endswitch()
+    !if ( $discribeConditionForAlt() )
+        end
+    !endif
+!endprocedure
+
+
+!procedure $actual_return($expression="")
+    !if ( ( $omit_call_on_module_mode == "false" ) || ( $currentModule_ != $preModule_ ) )
+        'deactivate
+    !endif
+
+    !if ( $discribeLevel == "func" )
+        $currentFunc_ -[#ffffff00]-> $preFunc_ -- : <size:0>return
+    !else
+        !if ( ( $omit_call_on_module_mode == "false" ) || ( $currentModule_ != $preModule_ ) )
+            $currentModule_ -[#ffffff00]-> $preModule_ -- : <size:0>return
+        !endif
+    !endif
+!endprocedure
+
+
+@enduml
