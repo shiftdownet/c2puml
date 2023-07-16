@@ -14,10 +14,13 @@ export_on_save:             # ファイル保存時の振る舞い
 ---
 
 
+
+
 # 1. サンプルコード
 
 本plantumlライブラリを用いて、以下のようなC言語を模したコードを記述します。
 
+[./sample_code.iuml](./sample_code.iuml)
 @import "./sample_code.iuml" {code_block=true class="line-numbers" as="c"}
 
 上記のコードを、様々なコンフィグを用いてplantumlダイアグラムとして描画してみましょう。
@@ -27,7 +30,7 @@ export_on_save:             # ファイル保存時の振る舞い
 
 何もコンフィグをせずに、単に描画した場合以下のようになります。
 
-```plantuml
+```plantuml {code_block=true class="line-numbers" }
 @startuml
 !include ./iuml/Sequence_Diagram_Library.iuml
 !include ./sample_code.iuml
@@ -40,19 +43,18 @@ export_on_save:             # ファイル保存時の振る舞い
 
 関数レベルの情報は不要で、モジュールレベルの情報のみがほしい場合、以下のように描画できます。
 
-```plantuml
+```plantuml {code_block=true class="line-numbers" }
 @startuml
 !include ./iuml/Sequence_Diagram_Library.iuml
 !$sdlConf_display_level = "module"
 !include ./sample_code.iuml
 @enduml
 ```
-
 ## 3.2. コンポーネントレベルの出力
 
 コンポーネントレベルも可能です。
 
-```plantuml
+```plantuml {code_block=true class="line-numbers" }
 @startuml
 !include ./iuml/Sequence_Diagram_Library.iuml
 !$sdlConf_display_level = "component"
@@ -66,7 +68,9 @@ export_on_save:             # ファイル保存時の振る舞い
 
 ## 4.1. 省略されたエレメント内の関数コールを表示
 
-```plantuml
+以下の例では SystemServiceコンポーネント内の関数コールの情報が示されています。
+
+```plantuml {code_block=true class="line-numbers" }
 @startuml
 !include ./iuml/Sequence_Diagram_Library.iuml
 !$sdlConf_display_level = "component"
@@ -77,7 +81,9 @@ export_on_save:             # ファイル保存時の振る舞い
 
 ## 4.2. 省略されたループや分岐、ステップを表示
 
-```plantuml
+関数コール以外の情報を省略せずに出力することも可能です。
+
+```plantuml {code_block=true class="line-numbers" }
 @startuml
 !include ./iuml/Sequence_Diagram_Library.iuml
 !$sdlConf_display_level = "component"
@@ -92,10 +98,11 @@ export_on_save:             # ファイル保存時の振る舞い
 
 一部のコンポーネントだけ詳しく表示することも可能です。
 
-
 ## 5.1. モジュールレベルで表示
 
-```plantuml
+Deviceコンポーネントをモジュールレベルまで詳細に表示した例です。
+
+```plantuml {code_block=true class="line-numbers" }
 @startuml
 !include ./iuml/Sequence_Diagram_Library.iuml
 !$sdlConf_display_level = "component"
@@ -107,7 +114,9 @@ export_on_save:             # ファイル保存時の振る舞い
 
 ## 5.2. 関数レベルで表示
 
-```plantuml
+Deviceコンポーネントを関数レベルまで詳細に表示した例です。
+
+```plantuml {code_block=true class="line-numbers" }
 @startuml
 !include ./iuml/Sequence_Diagram_Library.iuml
 !$sdlConf_display_level = "component"
@@ -119,8 +128,9 @@ export_on_save:             # ファイル保存時の振る舞い
 
 # 6. 組み合わせは自由
 
+以下の例では基本的にコンポーネントレベルで描画しますが、関数コールは省略せず、またKeyboardモジュールだけは関数レベルで描画するように設定した例です。
 
-```plantuml
+```plantuml {code_block=true class="line-numbers" }
 @startuml
 !include ./iuml/Sequence_Diagram_Library.iuml
 !$sdlConf_display_detail_unfocused_element_for_call = %true()
@@ -136,6 +146,7 @@ export_on_save:             # ファイル保存時の振る舞い
 ごめんなさい、詳細の仕様は定義されていません。
 しかし、以下の `Provided interface` から概ね読み取ることが可能です。
 
+[./iuml/Sequence_Diagram_Library.iuml](./iuml/Sequence_Diagram_Library.iuml)
 @import "./iuml/Sequence_Diagram_Library.iuml" {code_block=true class="line-numbers" as="pu"}
 
 
