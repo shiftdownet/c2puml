@@ -6,6 +6,7 @@
 
 class c2puml {
     [String]$convertedString = ""
+    [Int32]$nest = 0
 
     [void]startParse( [String]$rootPath ) {
         $this.Write("@startuml")
@@ -13,7 +14,7 @@ class c2puml {
         Get-ChildItem -Path $rootPath -Recurse -Filter "*.c" | ForEach-Object {
             $parentDirName = Split-Path (Split-Path $_.FullName -Parent) -Leaf
             $this.Write( "'#==============================================================================================")
-            $this.Write( "'# $($_.FullName)")
+            $this.Write( "'# file : $($_.FullName)")
             $this.Write( "'#==============================================================================================")
             $this.Write( "`$start_component(`"$parentDirName`")")
             $this.Write( "`$start_module(`"$($_.Name)`")")
@@ -46,12 +47,14 @@ class c2puml {
         $funcHead.Matches | ForEach {
             Write-Host "------" $_.Groups['name']
 
-            $this.Write("'#===============================================")
-            $this.Write("'# $($_.Groups['type']) $($_.Groups['name']) $($_.Groups['param'] -Replace '\s','')")
-            $this.Write("'#===============================================")
+            $this.Write("'#----------------------------------------------------")
+            $this.Write("'# func : $($_.Groups['type']) $($_.Groups['name']) $($_.Groups['param'] -Replace '\s+',' ')")
+            $this.Write("'#----------------------------------------------------")
             $this.Write("`$start_func(`"$($_.Groups['name'])`")")
             $this.Write("!procedure `$$($_.Groups['name'])()")
+            $this.nest++
             $this.analyzeFunction($_.Groups["imp"])
+            $this.nest--
             $this.Write( "!endprocedure")
             $this.Write( "")
         }
@@ -64,34 +67,41 @@ class c2puml {
         $processed = $processed -Replace "\s+", " "
         $processed = $processed -Replace "\n ", "\n"
 
-        $processed = $processed -Replace "\s*}\s*else\s+if\s*\((?<exp>.*)\)\s*{", "`$else(`"`$1`")`n"
-        $processed = $processed -Replace "\s*}\s*else\s*{", "`$else()`n"
-        $processed = $processed -Replace "\s*case\s+(.*):", "`$case(`"`$1`")`n"
-        $processed = $processed -Replace "\s*default:", "`$default()`n"
-        $processed = $processed -Replace "; (if|while|for|switch|do)", ";`n`$1"
         $processed = $processed -Replace "{", "`n{`n"
         $processed = $processed -Replace "}", "`n}`n"
+        $processed = $processed -Replace "}\s*else\s+if\s*\((?<exp>.*)\)\s*{", "`$elseif(`"`$1`")`n"
+        $processed = $processed -Replace "}\s*else\s*{", "`$else()`n"
+
+        $processed = $processed -Replace "\s*case\s+(.*?):", "`n`$case(`"`$1`")`n"
+        $processed = $processed -Replace "\s*default:", "`n`$default()`n"
+        $processed = $processed -Replace "; (if|while|for|switch|do)", ";`n`$1"
+
+
         $complexStatements = $processed.split("`n")
         
         $stack = [System.Collections.ArrayList]::new()
 
         foreach ( $complexStatement in $complexStatements ) {
-            #Write-Host $complexStatement
+            Write-Host $complexStatement
             #Write-Host $line
             if ( $complexStatement -match "^\s*\`$") {
+                $this.nest--
                 $this.Write($complexStatement)
+                $this.nest++
             }
             else {
                 
-                if ( $complexStatement -match "(?<ctrl>if|while|for|switch|do)\s*\(\s*(?<exp>.*)\s*\)") {
+                if ( $complexStatement -match "([^a-z]|^)(?<ctrl>if|while|for|switch|do)\s*\(\s*(?<exp>.*)\s*\)") {
                     $stack.Add($Matches["ctrl"])
                     $this.Write( ("`${0}(`"{1}`")" -f $Matches["ctrl"], $Matches["exp"]) )
                 }
                 else {
                     if ( $complexStatement -match "{" ) {
-                        #Write-Host ("{0} starts" -f $stack[ $stack.Count - 1 ])
+                        Write-Host ("{0} starts" -f $stack[ $stack.Count - 1 ])
+                        $this.nest++
                     } elseif ( $complexStatement -match "}" ) {
-                        #Write-Host ("{0} ends" -f $stack[ $stack.Count - 1 ])
+                        Write-Host ("{0} ends" -f $stack[ $stack.Count - 1 ])
+                        $this.nest--
 
                         $this.Write( ("`$end{0}()" -f $stack[ $stack.Count - 1 ]) )
                         $stack.RemoveAt($stack.Count - 1)
@@ -106,6 +116,10 @@ class c2puml {
                                 $this.Write( ("`$return(`"{0}`")" -f $Matches["ret"]) )
                             }elseif ( $line -match "(?<func>[a-zA-Z0-9_]+)\s*\((?<param>.*)\)\s*;" ) {
                                 $this.Write( ("`$call(`"{0}`")" -f $Matches["func"]) )
+                            }elseif ( $line -match "^\s*\`$") {
+                                $this.nest--
+                                $this.Write($line)
+                                $this.nest++
                             }
                         }
                     }
@@ -116,7 +130,7 @@ class c2puml {
     }
 
     [void]Write($str) {
-        $this.convertedString += $str + "`n"
+        $this.convertedString += ("    " * $this.nest) + $str + "`n"
     }
 }
 
