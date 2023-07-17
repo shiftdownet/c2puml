@@ -75,6 +75,26 @@ hide unlinked
     $generate_loop_("end")
 !endprocedure
 
+' forを開始する
+!procedure $for($information="infinity")
+    $generate_loop_("loop " + $information)
+!endprocedure
+
+' forを終了する
+!procedure $endfor()
+    $generate_loop_("end")
+!endprocedure
+
+' whileを開始する
+!procedure $while($information="infinity")
+    $generate_loop_("loop " + $information)
+!endprocedure
+
+' whileを終了する
+!procedure $endwhile()
+    $generate_loop_("end")
+!endprocedure
+
 ' ifを開始する
 !procedure $if($condition)
     $generate_alt_("alt if " + $condition)

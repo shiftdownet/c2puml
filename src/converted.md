@@ -263,6 +263,6 @@ $return("&l_hookinfoTbls[ a_idx ]")
 
 
 $box()
-$call("_tWinMain")
+$call("EntryPoint")
 @enduml
 
