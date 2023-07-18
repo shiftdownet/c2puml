@@ -36,24 +36,31 @@ class c2puml {
 
 
     [void]analyzeModule( [String]$contents ) {
-        $lineStart = "\r\n"
-        $functionTypeAndStrageInfo = "([^+-/^&%]+?)"
+        $contents = $contents -Replace "/\*.*\*/", ""
+        $contents = $contents -Replace "//.*?\n", ""
+
+        $lineStart = "\n"
+        $functionTypeAndStrageInfo = "([^\s{}][^+-/^&%{}]+?)"
         $functionName = "[a-zA-Z_][a-zA-Z0-9_]+"
-        $parameters = "\([a-zA-Z\s,_*]+\)"
+        $parameters = "\([a-zA-Z\s,_*()\[\]]+\)"
         $functionReg = "$lineStart(?<type>$functionTypeAndStrageInfo)\s?(?<name>$functionName)\s?(?<param>$parameters)\s*?\{(?<imp>[\s\S]+?)$lineStart}"
 
         $funcHead = $contents | Select-String -Pattern $functionReg -AllMatches
 
-        $funcHead.Matches | ForEach {
-            Write-Host "------" $_.Groups['name']
+        foreach( $matches in $funcHead.Matches ) {
+            $headline = "$($matches.Groups['type']) $($matches.Groups['name']) $($matches.Groups['param'])"  -Replace '\s+',' '
+
+            Write-Host ("'#----------------------------------------------------")
+            Write-Host ("'# func : $headline")
+            Write-Host ("'#----------------------------------------------------")
 
             $this.Write("'#----------------------------------------------------")
-            $this.Write("'# func : $($_.Groups['type']) $($_.Groups['name']) $($_.Groups['param'] -Replace '\s+',' ')")
+            $this.Write("'# func : $headline")
             $this.Write("'#----------------------------------------------------")
-            $this.Write("`$start_func(`"$($_.Groups['name'])`")")
-            $this.Write("!procedure `$$($_.Groups['name'])()")
+            $this.Write("`$start_func(`"$($matches.Groups['name'])`")")
+            $this.Write("!procedure `$$($matches.Groups['name'])()")
             $this.nest++
-            $this.analyzeFunction($_.Groups["imp"])
+            $this.analyzeFunction($matches.Groups["imp"])
             $this.nest--
             $this.Write( "!endprocedure")
             $this.Write( "")
@@ -62,8 +69,6 @@ class c2puml {
 
     [void]analyzeFunction( [String]$funcImp ) {
         $processed = $funcImp
-        $processed = $processed -Replace "/\*.*\*/", ""
-        $processed = $processed -Replace "//.*?\n", ""
         $processed = $processed -Replace "\s+", " "
         $processed = $processed -Replace "\n ", "\n"
 
@@ -81,6 +86,7 @@ class c2puml {
         
         $stack = [System.Collections.ArrayList]::new()
 
+        $marker = $false
         foreach ( $complexStatement in $complexStatements ) {
             Write-Host $complexStatement
             #Write-Host $line
@@ -90,20 +96,31 @@ class c2puml {
                 $this.nest++
             }
             else {
-                
-                if ( $complexStatement -match "([^a-z]|^)(?<ctrl>if|while|for|switch|do)\s*\(\s*(?<exp>.*)\s*\)") {
+                if($complexStatement -match "^\s*do\s*$"){
+                    $stack.Add("loop")
+                    $this.Write("`$loop(`"`do-while not supported`")")
+                    $marker = $true
+                }
+                elseif ( $complexStatement -match "([^a-z]|^)(?<ctrl>if|while|for|switch|do)\s*\(\s*(?<exp>.*)\s*\)") {
                     $stack.Add($Matches["ctrl"])
                     $this.Write( ("`${0}(`"{1}`")" -f $Matches["ctrl"], $Matches["exp"]) )
+                    $marker = $true
                 }
                 else {
                     if ( $complexStatement -match "{" ) {
-                        Write-Host ("{0} starts" -f $stack[ $stack.Count - 1 ])
+                        if($marker){
+                            Write-Host ("{0} starts" -f $stack[ $stack.Count - 1 ])
+                        }else{
+                            $stack.add("block")
+                        }
                         $this.nest++
                     } elseif ( $complexStatement -match "}" ) {
-                        Write-Host ("{0} ends" -f $stack[ $stack.Count - 1 ])
                         $this.nest--
-
-                        $this.Write( ("`$end{0}()" -f $stack[ $stack.Count - 1 ]) )
+                        $poped = "{0} ends" -f $stack[ $stack.Count - 1 ]
+                        if($poped -ne "block") {
+                            Write-Host ($poped)
+                            $this.Write( ("`$end{0}()" -f $stack[ $stack.Count - 1 ]) )
+                        }
                         $stack.RemoveAt($stack.Count - 1)
                     }
                     else {
