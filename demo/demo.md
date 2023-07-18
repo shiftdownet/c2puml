@@ -32,9 +32,8 @@ export_on_save:             # ファイル保存時の振る舞い
 
 ```plantuml {code_block=true class="line-numbers" }
 @startuml
-!include ./iuml/Sequence_Diagram_Library.iuml
+!include ./../iumlLibrary/Sequence_Diagram_Library.iuml
 !include ./sample_code.iuml
-
 @enduml
 ```
 
@@ -46,7 +45,7 @@ export_on_save:             # ファイル保存時の振る舞い
 
 ```plantuml {code_block=true class="line-numbers" }
 @startuml
-!include ./iuml/Sequence_Diagram_Library.iuml
+!include ./../iumlLibrary/Sequence_Diagram_Library.iuml
 !$sdlConf_display_level = "module"
 !include ./sample_code.iuml
 @enduml
@@ -57,7 +56,7 @@ export_on_save:             # ファイル保存時の振る舞い
 
 ```plantuml {code_block=true class="line-numbers" }
 @startuml
-!include ./iuml/Sequence_Diagram_Library.iuml
+!include ./../iumlLibrary/Sequence_Diagram_Library.iuml
 !$sdlConf_display_level = "component"
 !include ./sample_code.iuml
 @enduml
@@ -73,7 +72,7 @@ export_on_save:             # ファイル保存時の振る舞い
 
 ```plantuml {code_block=true class="line-numbers" }
 @startuml
-!include ./iuml/Sequence_Diagram_Library.iuml
+!include ./../iumlLibrary/Sequence_Diagram_Library.iuml
 !$sdlConf_display_level = "component"
 !$sdlConf_display_detail_unfocused_element_for_call = %true()
 !include ./sample_code.iuml
@@ -86,7 +85,7 @@ export_on_save:             # ファイル保存時の振る舞い
 
 ```plantuml {code_block=true class="line-numbers" }
 @startuml
-!include ./iuml/Sequence_Diagram_Library.iuml
+!include ./../iumlLibrary/Sequence_Diagram_Library.iuml
 !$sdlConf_display_level = "component"
 !$sdlConf_display_detail_unfocused_element_for_loop = %true()
 !$sdlConf_display_detail_unfocused_element_for_alt = %true()
@@ -105,7 +104,7 @@ Deviceコンポーネントをモジュールレベルまで詳細に表示し�
 
 ```plantuml {code_block=true class="line-numbers" }
 @startuml
-!include ./iuml/Sequence_Diagram_Library.iuml
+!include ./../iumlLibrary/Sequence_Diagram_Library.iuml
 !$sdlConf_display_level = "component"
 !$sdlConf_display_lifeline_focused_element = "Device"
 !$sdlConf_display_lifeline_focused_element_level = "module"
@@ -119,7 +118,7 @@ Deviceコンポーネントを関数レベルまで詳細に表示した例で�
 
 ```plantuml {code_block=true class="line-numbers" }
 @startuml
-!include ./iuml/Sequence_Diagram_Library.iuml
+!include ./../iumlLibrary/Sequence_Diagram_Library.iuml
 !$sdlConf_display_level = "component"
 !$sdlConf_display_lifeline_focused_element = "Device"
 !$sdlConf_display_lifeline_focused_element_level = "func"
@@ -133,7 +132,7 @@ Deviceコンポーネントを関数レベルまで詳細に表示した例で�
 
 ```plantuml {code_block=true class="line-numbers" }
 @startuml
-!include ./iuml/Sequence_Diagram_Library.iuml
+!include ./../iumlLibrary/Sequence_Diagram_Library.iuml
 !$sdlConf_display_detail_unfocused_element_for_call = %true()
 !$sdlConf_display_level = "component"
 !$sdlConf_display_lifeline_focused_element = "Keyboard"
@@ -147,8 +146,8 @@ Deviceコンポーネントを関数レベルまで詳細に表示した例で�
 ごめんなさい、詳細の仕様は定義されていません。
 しかし、以下の `Provided interface` から概ね読み取ることが可能です。
 
-[./iuml/Sequence_Diagram_Library.iuml](./iuml/Sequence_Diagram_Library.iuml)
-@import "./iuml/Sequence_Diagram_Library.iuml" {code_block=true class="line-numbers" as="pu"}
+[./../iumlLibrary/Sequence_Diagram_Library.iuml](./../iumlLibrary/Sequence_Diagram_Library.iuml)
+@import "./../iumlLibrary/Sequence_Diagram_Library.iuml" {code_block=true class="line-numbers" as="pu"}
 
 
 

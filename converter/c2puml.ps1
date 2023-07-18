@@ -25,13 +25,13 @@ class c2puml {
             $this.Write( "")
         }
 
-        $this.Write("`$box()")
-        $this.Write("`$call(`"EntryPoint`")")
+        $this.Write("' `$box()")
+        $this.Write("' `$call(`"EntryPoint`")")
 
         $this.Write("@enduml")
 
         $UTF8woBOM = New-Object "System.Text.UTF8Encoding" -ArgumentList @($false)
-        [System.IO.File]::WriteAllLines((Join-Path $PWD "converted.md"), @($this.convertedString), $UTF8woBOM)
+        [System.IO.File]::WriteAllLines((Join-Path $PWD "./../demo/sample_code.iuml"), @($this.convertedString), $UTF8woBOM)
     }
 
 
@@ -137,6 +137,9 @@ class c2puml {
                                 $this.nest--
                                 $this.Write($line)
                                 $this.nest++
+                            }elseif ( $line -match "^\s*$" ){
+                            }else{
+                                $this.Write("`$step(`"$line`")")
                             }
                         }
                     }
@@ -153,7 +156,7 @@ class c2puml {
 
 #$contents = Get-Content $filePath -Raw -Encoding Default
 
-$rootPath = "./../example"
+$rootPath = "./../demo/example"
 
 $simpleParser = [c2puml ]::new()
 
