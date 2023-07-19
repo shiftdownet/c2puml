@@ -40,9 +40,9 @@ class c2puml {
         $contents = $contents -Replace "//.*?\n", ""
 
         $lineStart = "\n"
-        $functionTypeAndStrageInfo = "([^\s{}][^+-/^&%{}]+?)"
+        $functionTypeAndStrageInfo = "([^\s{};#][^+-/^&%{}]+?)"
         $functionName = "[a-zA-Z_][a-zA-Z0-9_]+"
-        $parameters = "\([a-zA-Z\s,_*()\[\]]+\)"
+        $parameters = "\([a-zA-Z0-9\s,_*()\[\]]+\)"
         $functionReg = "$lineStart(?<type>$functionTypeAndStrageInfo)\s?(?<name>$functionName)\s?(?<param>$parameters)\s*?\{(?<imp>[\s\S]+?)$lineStart}"
 
         $funcHead = $contents | Select-String -Pattern $functionReg -AllMatches
@@ -116,7 +116,7 @@ class c2puml {
                         $this.nest++
                     } elseif ( $complexStatement -match "}" ) {
                         $this.nest--
-                        $poped = "{0} ends" -f $stack[ $stack.Count - 1 ]
+                        $poped = $stack[ $stack.Count - 1 ]
                         if($poped -ne "block") {
                             Write-Host ($poped)
                             $this.Write( ("`$end{0}()" -f $stack[ $stack.Count - 1 ]) )
