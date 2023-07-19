@@ -30,22 +30,26 @@ hide unlinked
 '#-------------------------------------------------
 ' 関数をコールする
 !procedure $call( $func )
+
+    ' 関数名の解決を行う
+    !$fullname = $resolve_func_name( $func )
+
     ' 呼び出しを描画
-    $generate_call_( $to=$func, $message=$func )
+    $generate_call_( $to=$fullname, $message=$func )
 
     ' スタックを進める
     $inc_stack_()
 
     ' スタック：関数名
-    $set_value_in_current_stack( "func", $func )
+    $set_value_in_current_stack( "func", $fullname )
     ' スタック：このactivationの中でreturnが呼ばれたか
     $set_value_in_current_stack( "return_called", %false() )
     ' スタック：既にdeactivateされたか
     $set_value_in_current_stack( "already_inactivated", %false() )
 
     ' 実際の関数呼び出し
-    !if %function_exists( "$" + $func )
-        %invoke_procedure( "$" + $func )
+    !if %function_exists( "$" + $fullname )
+        %invoke_procedure( "$" + $fullname )
     !endif
 
     ' 関数終了
@@ -145,13 +149,21 @@ hide unlinked
 
 ' モジュールの開始を宣言する
 !procedure $start_module($module)
+    !$module = $replace($module, ".", "_")
     %set_variable_value("current_module", $module )
     $set_component_of($module, %get_variable_value("current_component"))
 !endprocedure
 
 ' 関数の開始を宣言する
-!procedure $start_func($func)
-    $set_module_of($func, %get_variable_value("current_module"))
+!procedure $start_func($func, $scope="")
+    !if $scope == "static"
+        !$fullname = $get_func_name_with_module( $func, %get_variable_value("current_module") )
+    !else
+        !$fullname = $func
+    !endif
+    $set_module_of($fullname, %get_variable_value("current_module"))
+
+    %set_variable_value($fullname + ".showname", $func )
 !endprocedure
 
 ' 関数$funcのモジュール名$moduleを設定する
@@ -251,6 +263,8 @@ hide unlinked
 !endprocedure
 
 !procedure $callback_of_module_list_from_component( $module_name )
+    '!$module_name = $replace($module_name, ".", "_")
+    %set_variable_value("box_current_value", $module_name )
     box $module_name #WhiteSmoke
         participant $module_name <<($sdlConf_stereotype_icon_of_module,$sdlConf_stereotype_color_of_module)>>
         $iterate_array( "func_list_of_" + $module_name , "$callback_of_func_list_from_module" )
@@ -258,7 +272,41 @@ hide unlinked
 !endprocedure
 
 !procedure $callback_of_func_list_from_module( $func_name )
-    participant $func_name <<($sdlConf_stereotype_icon_of_func ,$sdlConf_stereotype_color_of_component)>>
+    !$showname = %get_variable_value($func_name + ".showname" )
+    participant $showname as $func_name <<($sdlConf_stereotype_icon_of_func ,$sdlConf_stereotype_color_of_component)>>
 !endprocedure
+
+!function $get_func_name_with_module( $func, $module )
+    !return $module + "_____" + $func
+!endfunction
+
+
+!function $resolve_func_name( $func )
+    !$currentFullName = $get_value_in_current_stack( "func"  )
+    !$currentModule   = %get_variable_value($currentFullName + ".module" )
+
+    !$funcFullName = $get_func_name_with_module( $func, $currentModule )
+
+    !if %function_exists( "$" + $funcFullName )
+        !return $funcFullName
+    !else
+        !return $func
+    !endif
+!endfunction
+
+
+!function $replace($old, $from, $to)
+    !$list = %splitstr($old, $from)
+    !$new = ""
+    !$cnt = 0
+    !foreach $item in $list
+        !$cnt = $cnt + 1
+        !if $cnt == %size($list)
+            !$to = ""
+        !endif
+        !$new = $new + $item + $to
+    !endfor
+    !return $new
+!endfunction
 
 @enduml

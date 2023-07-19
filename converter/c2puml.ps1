@@ -21,7 +21,7 @@ class c2puml {
             $this.Write( "")
 
             $contents = Get-Content $_.FullName -Raw -Encoding Default
-            $this.analyzeModule( $contents )
+            $this.analyzeModule( $contents,$_.Name )
             $this.Write( "")
         }
 
@@ -35,32 +35,41 @@ class c2puml {
     }
 
 
-    [void]analyzeModule( [String]$contents ) {
+    [void]analyzeModule( [String]$contents, [String]$module ) {
         $contents = $contents -Replace "/\*.*\*/", ""
         $contents = $contents -Replace "//.*?\n", ""
 
         $lineStart = "\n"
-        $functionTypeAndStrageInfo = "([^\s{};#][^+-/^&%{}]+?)"
-        $functionName = "[a-zA-Z_][a-zA-Z0-9_]+"
-        $parameters = "\([a-zA-Z0-9\s,_*()\[\]]+\)"
-        $functionReg = "$lineStart(?<type>$functionTypeAndStrageInfo)\s?(?<name>$functionName)\s?(?<param>$parameters)\s*?\{(?<imp>[\s\S]+?)$lineStart}"
+        $storageType = "(?<storage>(static|extern|STATIC|EXTERN)\s)?"
+        $functionType = "(?<type>([^\s{};#][^+-/^&%{}]+?))"
+        $functionName = "(?<name>([a-zA-Z_][a-zA-Z0-9_]+))"
+        $parameters = "(?<param>(\([a-zA-Z0-9\s,_*()\[\]]+\)))"
+        $functionReg = "$($lineStart)$($storageType)$($functionType)\s?$($functionName)\s?($parameters)\s*?\{(?<imp>[\s\S]+?)$lineStart}"
 
         $funcHead = $contents | Select-String -Pattern $functionReg -AllMatches
 
-        foreach( $matches in $funcHead.Matches ) {
-            $headline = "$($matches.Groups['type']) $($matches.Groups['name']) $($matches.Groups['param'])"  -Replace '\s+',' '
+        foreach( $a_match in $funcHead.Matches ) {
+            $headline = "$($a_match.Groups['storage']) ## $($a_match.Groups['type']) ## $($a_match.Groups['name']) ## $($a_match.Groups['param'])"  -Replace '\s+',' '
 
             Write-Host ("'#----------------------------------------------------")
             Write-Host ("'# func : $headline")
             Write-Host ("'#----------------------------------------------------")
 
+            if ( $a_match.Groups['storage'] -match "(STATIC|static)" ){
+                $procedureName = ($module -Replace "\.","_") + "_____" + $a_match.Groups['name']
+                $scope = "static"
+            } else {
+                $procedureName = $a_match.Groups['name']
+                $scope = "extern"
+            }
+
             $this.Write("'#----------------------------------------------------")
             $this.Write("'# func : $headline")
             $this.Write("'#----------------------------------------------------")
-            $this.Write("`$start_func(`"$($matches.Groups['name'])`")")
-            $this.Write("!procedure `$$($matches.Groups['name'])()")
+            $this.Write("`$start_func(`"$($a_match.Groups['name'])`", `"$scope`")")
+            $this.Write("!procedure `$$($procedureName)()")
             $this.nest++
-            $this.analyzeFunction($matches.Groups["imp"])
+            $this.analyzeFunction($a_match.Groups["imp"])
             $this.nest--
             $this.Write( "!endprocedure")
             $this.Write( "")
