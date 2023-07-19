@@ -2,26 +2,38 @@
 #
 # 超ゴリ押し力技
 #
-
+Param([String]$codeRootPath = "./../demo/example", [String]$outPath = "./../demo/sample_code.iuml", [String]$codeEncoding = "Default")
 
 class c2puml {
     [String]$convertedString = ""
     [Int32]$nest = 0
 
-    [void]startParse( [String]$rootPath ) {
+    [void]startParse( [String]$rootPath, [String]$outPath, [String]$codeEncoding ) {
         $this.Write("@startuml")
 
-        Get-ChildItem -Path $rootPath -Recurse -Filter "*.c" | ForEach-Object {
-            $parentDirName = Split-Path (Split-Path $_.FullName -Parent) -Leaf
+        $files = Get-ChildItem -Path $rootPath -Recurse -Filter "*.c"
+        foreach ( $file in $files ) {
+            $parentDirName = Split-Path (Split-Path $file.FullName -Parent) -Leaf
             $this.Write( "'#==============================================================================================")
-            $this.Write( "'# file : $($_.FullName)")
+            $this.Write( "'# file : $($file.FullName)")
             $this.Write( "'#==============================================================================================")
             $this.Write( "`$start_component(`"$parentDirName`")")
-            $this.Write( "`$start_module(`"$($_.Name)`")")
+            $this.Write( "`$start_module(`"$($file.Name)`")")
             $this.Write( "")
 
-            $contents = Get-Content $_.FullName -Raw -Encoding Default
-            $this.analyzeModule( $contents,$_.Name )
+            switch ( $codeEncoding ) {
+                "Default" {
+                    $contents = Get-Content $file.FullName -Raw -Encoding Default
+                }
+                "UTF8" {
+                    $contents = Get-Content $file.FullName -Raw -Encoding UTF8
+                }
+                "Default" {
+
+                }
+            }
+            $contents = Get-Content $file.FullName -Raw -Encoding Default
+            $this.analyzeModule( $contents, $file.Name )
             $this.Write( "")
         }
 
@@ -31,7 +43,7 @@ class c2puml {
         $this.Write("@enduml")
 
         $UTF8woBOM = New-Object "System.Text.UTF8Encoding" -ArgumentList @($false)
-        [System.IO.File]::WriteAllLines((Join-Path $PWD "./../demo/sample_code.iuml"), @($this.convertedString), $UTF8woBOM)
+        [System.IO.File]::WriteAllLines((Join-Path $PWD $outPath), @($this.convertedString), $UTF8woBOM)
     }
 
 
@@ -48,17 +60,18 @@ class c2puml {
 
         $funcHead = $contents | Select-String -Pattern $functionReg -AllMatches
 
-        foreach( $a_match in $funcHead.Matches ) {
-            $headline = "$($a_match.Groups['storage']) ## $($a_match.Groups['type']) ## $($a_match.Groups['name']) ## $($a_match.Groups['param'])"  -Replace '\s+',' '
+        foreach ( $a_match in $funcHead.Matches ) {
+            $headline = "$($a_match.Groups['storage']) ## $($a_match.Groups['type']) ## $($a_match.Groups['name']) ## $($a_match.Groups['param'])" -Replace '\s+', ' '
 
             Write-Host ("'#----------------------------------------------------")
             Write-Host ("'# func : $headline")
             Write-Host ("'#----------------------------------------------------")
 
-            if ( $a_match.Groups['storage'] -match "(STATIC|static)" ){
-                $procedureName = ($module -Replace "\.","_") + "_____" + $a_match.Groups['name']
+            if ( $a_match.Groups['storage'] -match "(STATIC|static)" ) {
+                $procedureName = ($module -Replace "\.", "_") + "_____" + $a_match.Groups['name']
                 $scope = "static"
-            } else {
+            }
+            else {
                 $procedureName = $a_match.Groups['name']
                 $scope = "extern"
             }
@@ -105,7 +118,7 @@ class c2puml {
                 $this.nest++
             }
             else {
-                if($complexStatement -match "^\s*do\s*$"){
+                if ($complexStatement -match "^\s*do\s*$") {
                     $stack.Add("loop")
                     $this.Write("`$loop(`"`do-while not supported`")")
                     $marker = $true
@@ -117,16 +130,18 @@ class c2puml {
                 }
                 else {
                     if ( $complexStatement -match "{" ) {
-                        if($marker){
+                        if ($marker) {
                             Write-Host ("{0} starts" -f $stack[ $stack.Count - 1 ])
-                        }else{
+                        }
+                        else {
                             $stack.add("block")
                         }
                         $this.nest++
-                    } elseif ( $complexStatement -match "}" ) {
+                    }
+                    elseif ( $complexStatement -match "}" ) {
                         $this.nest--
                         $poped = $stack[ $stack.Count - 1 ]
-                        if($poped -ne "block") {
+                        if ($poped -ne "block") {
                             Write-Host ($poped)
                             $this.Write( ("`$end{0}()" -f $stack[ $stack.Count - 1 ]) )
                         }
@@ -136,18 +151,22 @@ class c2puml {
                         $lines = $complexStatement -Replace ";", ";`n"
                         $lines = $lines -Replace ":", ":`n"
                         $lines = $lines.split("`n")
-                        foreach ( $line in $lines ){
+                        foreach ( $line in $lines ) {
                             #Write-Host $line
                             if ( $line -match "return\s?(?<ret>.*)?;" ) {
                                 $this.Write( ("`$return(`"{0}`")" -f $Matches["ret"]) )
-                            }elseif ( $line -match "(?<func>[a-zA-Z0-9_]+)\s*\((?<param>.*)\)\s*;" ) {
+                            }
+                            elseif ( $line -match "(?<func>[a-zA-Z0-9_]+)\s*\((?<param>.*)\)\s*;" ) {
                                 $this.Write( ("`$call(`"{0}`")" -f $Matches["func"]) )
-                            }elseif ( $line -match "^\s*\`$") {
+                            }
+                            elseif ( $line -match "^\s*\`$") {
                                 $this.nest--
                                 $this.Write($line)
                                 $this.nest++
-                            }elseif ( $line -match "^\s*$" ){
-                            }else{
+                            }
+                            elseif ( $line -match "^\s*$" ) {
+                            }
+                            else {
                                 $this.Write("`$step(`"$line`")")
                             }
                         }
@@ -163,12 +182,6 @@ class c2puml {
     }
 }
 
-#$contents = Get-Content $filePath -Raw -Encoding Default
-
-$rootPath = "./../demo/example"
-
-$simpleParser = [c2puml ]::new()
-
-
-$simpleParser.startParse( $rootPath )
+$simpleConverter = [c2puml]::new()
+$simpleConverter.startParse( $codeRootPath, $outPath, $codeEncoding )
 
