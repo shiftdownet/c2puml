@@ -29,7 +29,7 @@ class c2puml {
                     $contents = Get-Content $file.FullName -Raw -Encoding UTF8
                 }
                 "Default" {
-
+                    $contents = Get-Content $file.FullName -Raw
                 }
             }
             $contents = Get-Content $file.FullName -Raw -Encoding Default
