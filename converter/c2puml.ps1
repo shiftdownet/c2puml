@@ -153,7 +153,7 @@ class c2puml {
                         $lines = $lines.split("`n")
                         foreach ( $line in $lines ) {
                             #Write-Host $line
-                            if ( $line -match "return\s?(?<ret>.*)?;" ) {
+                            if ( $line -match "^\s*return((\s+\(?|\(?)(?<ret>.*))?;" ) {
                                 $this.Write( ("`$return(`"{0}`")" -f $Matches["ret"]) )
                             }
                             elseif ( $line -match "(?<func>[a-zA-Z0-9_]+)\s*\((?<param>.*)\)\s*;" ) {
