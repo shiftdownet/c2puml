@@ -123,13 +123,13 @@ $call("_tWinMain")
 
 ## 2.5. モジュールレベルで表示
 
-Deviceコンポーネントをモジュールレベルまで詳細に表示した例です。
+userコンポーネントをモジュールレベルまで詳細に表示した例です。
 
 ```plantuml {code_block=true class="line-numbers" }
 @startuml
 !include ./../iumlLibrary/Sequence_Diagram_Library.iuml
 !$sdlConf_display_level = "component"
-!$sdlConf_display_lifeline_focused_element = "Device"
+!$sdlConf_display_lifeline_focused_element = "user"
 !$sdlConf_display_lifeline_focused_element_level = "module"
 !include ./sample_code.iuml
 $box()
@@ -140,13 +140,13 @@ $call("_tWinMain")
 
 ### 2.5.1. 関数レベルで表示
 
-Deviceコンポーネントを関数レベルまで詳細に表示した例です。
+userコンポーネントを関数レベルまで詳細に表示した例です。
 
 ```plantuml {code_block=true class="line-numbers" }
 @startuml
 !include ./../iumlLibrary/Sequence_Diagram_Library.iuml
 !$sdlConf_display_level = "component"
-!$sdlConf_display_lifeline_focused_element = "Device"
+!$sdlConf_display_lifeline_focused_element = "user"
 !$sdlConf_display_lifeline_focused_element_level = "func"
 !include ./sample_code.iuml
 $box()
@@ -157,14 +157,14 @@ $call("_tWinMain")
 
 ## 2.6. 組み合わせは自由
 
-以下の例では基本的にコンポーネントレベルで描画しますが、関数コールは省略せず、またKeyboardモジュールだけは関数レベルで描画するように設定した例です。
+以下の例では基本的にコンポーネントレベルで描画しますが、関数コールは省略せず、またuserモジュールだけは関数レベルで描画するように設定した例です。
 
 ```plantuml {code_block=true class="line-numbers" }
 @startuml
 !include ./../iumlLibrary/Sequence_Diagram_Library.iuml
 !$sdlConf_display_detail_unfocused_element_for_call = %true()
 !$sdlConf_display_level = "component"
-!$sdlConf_display_lifeline_focused_element = "Keyboard"
+!$sdlConf_display_lifeline_focused_element = "user"
 !$sdlConf_display_lifeline_focused_element_level = "func"
 !include ./sample_code.iuml
 $box()
