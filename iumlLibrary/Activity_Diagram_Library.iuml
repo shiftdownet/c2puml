@@ -5,7 +5,6 @@
 '#=============================================================================
 ' 下記設定を前提にplantumlを生成しています
 !pragma teoz true
-hide unlinked
 
 '#=============================================================================
 '# include modules
@@ -20,7 +19,7 @@ hide unlinked
 !include ./select_object.iuml
 
 ' plantumlの構文に従ってテキストを生成するライブラリ
-!include ./sdl_plantuml.iuml
+!include ./adl_plantuml.iuml
 
 '#=============================================================================
 '# Provided interfaces
@@ -71,72 +70,72 @@ hide unlinked
 
 ' loopを開始する
 !procedure $loop($information="infinity")
-    $generate_loop_("loop " + $information)
+    $generate_loop_("while (" + $information + ")")
 !endprocedure
 
 ' loopを終了する
 !procedure $endloop()
-    $generate_loop_("end")
+    $generate_loop_("endwhile")
 !endprocedure
 
 ' forを開始する
 !procedure $for($information="infinity")
-    $generate_loop_("loop " + $information)
+    $generate_loop_("while (" + $information + ")")
 !endprocedure
 
 ' forを終了する
 !procedure $endfor()
-    $generate_loop_("end")
+    $generate_loop_("endwhile")
 !endprocedure
 
 ' whileを開始する
 !procedure $while($information="infinity")
-    $generate_loop_("loop " + $information)
+    $generate_loop_("while (" + $information + ")")
 !endprocedure
 
 ' whileを終了する
 !procedure $endwhile()
-    $generate_loop_("end")
+    $generate_loop_("endwhile")
 !endprocedure
 
 ' ifを開始する
 !procedure $if($condition)
-    $generate_alt_("alt if " + $condition)
+    $generate_alt_("if (" + $condition + ") then")
 !endprocedure
 
 ' else-ifを開始する
 !procedure $elseif($condition="")
-    $generate_alt_("else else-if " + $condition)
+    $generate_alt_("elseif (" + $condition + ") then")
 !endprocedure
 
 ' elseを開始する
 !procedure $else()
-    $generate_alt_("else else")
+    $generate_alt_("else (else)")
 !endprocedure
 
 ' ifを終了する
 !procedure $endif()
-    $generate_alt_("end")
+    $generate_alt_("endif")
 !endprocedure
 
 ' switchを開始する
 !procedure $switch($expression)
-    $generate_alt_("alt switch " + $expression)
+    $generate_alt_("switch (" + $expression + ")")
 !endprocedure
 
 ' caseラベルを定義する
 !procedure $case($condition="")
-    $generate_alt_("else case " + $condition)
+    $generate_alt_("case (" + $condition + ")")
 !endprocedure
 
 ' defaultラベルを定義する
 !procedure $default()
-    $generate_alt_("else default")
+    $generate_alt_("case (default)")
 !endprocedure
 
 ' switchを終了する
 !procedure $endswitch()
-    $generate_alt_("end")
+    $generate_alt_("endswitch")
 !endprocedure
 
 '#-------------------------------------------------
@@ -192,7 +191,7 @@ hide unlinked
 
 ' $set_xxx_of の設定に基づいて boxを描画する
 !procedure $box()
-    participant $sdlConf_entry_point
+    start
     $iterate_array( "component_list", "$callback_of_component_list" )
     '$iterate_array( "module_list", "$callback_of_module_list" )
 !endprocedure
@@ -256,24 +255,17 @@ hide unlinked
 '# Internal functions
 '#=============================================================================
 !procedure $callback_of_component_list( $component_name )
-    box $component_name #FloralWhite
-        participant $component_name <<($sdlConf_stereotype_icon_of_component, $sdlConf_stereotype_color_of_func)>>
-        $iterate_array( "module_list_of_" + $component_name , "$callback_of_module_list_from_component" )
-    end box
+    $iterate_array( "module_list_of_" + $component_name , "$callback_of_module_list_from_component" )
 !endprocedure
 
 !procedure $callback_of_module_list_from_component( $module_name )
     '!$module_name = $replace($module_name, ".", "_")
     %set_variable_value("box_current_value", $module_name )
-    box $module_name #WhiteSmoke
-        participant $module_name <<($sdlConf_stereotype_icon_of_module,$sdlConf_stereotype_color_of_module)>>
-        $iterate_array( "func_list_of_" + $module_name , "$callback_of_func_list_from_module" )
-    end box
+    $iterate_array( "func_list_of_" + $module_name , "$callback_of_func_list_from_module" )
 !endprocedure
 
 !procedure $callback_of_func_list_from_module( $func_name )
     !$showname = %get_variable_value($func_name + ".showname" )
-    participant $showname as $func_name <<($sdlConf_stereotype_icon_of_func ,$sdlConf_stereotype_color_of_component)>>
 !endprocedure
 
 !function $get_func_name_with_module( $func, $module )

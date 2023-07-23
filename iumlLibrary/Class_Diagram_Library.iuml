@@ -4,8 +4,8 @@
 '# Skin setting
 '#=============================================================================
 ' 下記設定を前提にplantumlを生成しています
-!pragma teoz true
-hide unlinked
+'!pragma teoz true
+'hide unlinked
 
 '#=============================================================================
 '# include modules
@@ -20,7 +20,7 @@ hide unlinked
 !include ./select_object.iuml
 
 ' plantumlの構文に従ってテキストを生成するライブラリ
-!include ./sdl_plantuml.iuml
+!include ./cdl_plantuml.iuml
 
 '#=============================================================================
 '# Provided interfaces
@@ -29,6 +29,19 @@ hide unlinked
 '# 実装コードを定義するAPI
 '#-------------------------------------------------
 ' 関数をコールする
+!procedure $call_by( $func )
+
+    ' スタック：関数名
+    $set_value_in_current_stack( "func",  $func )
+
+    ' 実際の関数呼び出し
+    !if %function_exists( "$" + $func )
+        %invoke_procedure( "$" + $func )
+    !endif
+
+!endprocedure
+
+
 !procedure $call( $func )
 
     ' 関数名の解決を行う
@@ -37,106 +50,88 @@ hide unlinked
     ' 呼び出しを描画
     $generate_call_( $to=$fullname, $message=$func )
 
-    ' スタックを進める
-    $inc_stack_()
+!endprocedure
 
-    ' スタック：関数名
-    $set_value_in_current_stack( "func", $fullname )
-    ' スタック：このactivationの中でreturnが呼ばれたか
-    $set_value_in_current_stack( "return_called", %false() )
-    ' スタック：既にdeactivateされたか
-    $set_value_in_current_stack( "already_inactivated", %false() )
+!procedure $generate_call_( $to, $message )
+    !$from_object = $get_from_object_()
+    !$to_object = $get_to_object_( $to )
+    !if $from_object != $to_object
+        !if $to_object == "A_Module"
 
-    ' 実際の関数呼び出し
-    !if %function_exists( "$" + $fullname )
-        %invoke_procedure( "$" + $fullname )
+        !endif
+        !$connection = $from_object + " -(0- " + $to_object
+        !$message = "<font size=10>" + $message + "()\n"
+        !if $array_has_specific_data("call_list", $connection) == %false()
+            %set_variable_value( $connection, $message )
+            $push_to( "call_list", $connection )
+        !else
+            %set_variable_value( $connection, %get_variable_value( $connection ) + $message )
+        !endif
     !endif
-
-    ' 関数終了
-    $generate_function_end_()
-
-    ' スタックを戻す
-    $dec_stack_()
 !endprocedure
 
 ' returnする
 !procedure $return($expression="")
-    $generate_return_( $expression )
 !endprocedure
 
 ' stepを実行する
 !procedure $step($content)
-    $generate_step_($content)
 !endprocedure
 
 ' loopを開始する
 !procedure $loop($information="infinity")
-    $generate_loop_("loop " + $information)
 !endprocedure
 
 ' loopを終了する
 !procedure $endloop()
-    $generate_loop_("end")
 !endprocedure
 
 ' forを開始する
 !procedure $for($information="infinity")
-    $generate_loop_("loop " + $information)
 !endprocedure
 
 ' forを終了する
 !procedure $endfor()
-    $generate_loop_("end")
 !endprocedure
 
 ' whileを開始する
 !procedure $while($information="infinity")
-    $generate_loop_("loop " + $information)
 !endprocedure
 
 ' whileを終了する
 !procedure $endwhile()
-    $generate_loop_("end")
 !endprocedure
 
 ' ifを開始する
 !procedure $if($condition)
-    $generate_alt_("alt if " + $condition)
 !endprocedure
 
 ' else-ifを開始する
 !procedure $elseif($condition="")
-    $generate_alt_("else else-if " + $condition)
 !endprocedure
 
 ' elseを開始する
 !procedure $else()
-    $generate_alt_("else else")
 !endprocedure
 
 ' ifを終了する
 !procedure $endif()
-    $generate_alt_("end")
 !endprocedure
 
 ' switchを開始する
 !procedure $switch($expression)
-    $generate_alt_("alt switch " + $expression)
 !endprocedure
 
 ' caseラベルを定義する
 !procedure $case($condition="")
-    $generate_alt_("else case " + $condition)
 !endprocedure
 
 ' defaultラベルを定義する
 !procedure $default()
-    $generate_alt_("else default")
 !endprocedure
 
 ' switchを終了する
 !procedure $endswitch()
-    $generate_alt_("end")
 !endprocedure
 
 '#-------------------------------------------------
@@ -192,8 +187,9 @@ hide unlinked
 
 ' $set_xxx_of の設定に基づいて boxを描画する
 !procedure $box()
-    participant $sdlConf_entry_point
     $iterate_array( "component_list", "$callback_of_component_list" )
+    $iterate_array( "call_list", "$callback_of_call_list" )
+
     '$iterate_array( "module_list", "$callback_of_module_list" )
 !endprocedure
 
@@ -207,7 +203,7 @@ hide unlinked
 '#      func ... 関数レベル
 '#      module ... モジュールレベル
 '#      component ... コンポーネントレベル
-!$sdlConf_display_level = "func"
+!$sdlConf_display_level = "module"
 
 '# $sdlConf_display_level が func以外に設定されている時でも、ここで指定したエレメントは個別のライフラインとして描画します
 !$sdlConf_display_lifeline_focused_element = "not specified"
@@ -256,30 +252,38 @@ hide unlinked
 '# Internal functions
 '#=============================================================================
 !procedure $callback_of_component_list( $component_name )
-    box $component_name #FloralWhite
-        participant $component_name <<($sdlConf_stereotype_icon_of_component, $sdlConf_stereotype_color_of_func)>>
+    package "$component_name"  {
         $iterate_array( "module_list_of_" + $component_name , "$callback_of_module_list_from_component" )
-    end box
+    }
 !endprocedure
 
 !procedure $callback_of_module_list_from_component( $module_name )
     '!$module_name = $replace($module_name, ".", "_")
     %set_variable_value("box_current_value", $module_name )
-    box $module_name #WhiteSmoke
-        participant $module_name <<($sdlConf_stereotype_icon_of_module,$sdlConf_stereotype_color_of_module)>>
+    class $module_name <<($sdlConf_stereotype_icon_of_module,$sdlConf_stereotype_color_of_module)>> #WhiteSmoke {
         $iterate_array( "func_list_of_" + $module_name , "$callback_of_func_list_from_module" )
-    end box
+    }
 !endprocedure
 
 !procedure $callback_of_func_list_from_module( $func_name )
     !$showname = %get_variable_value($func_name + ".showname" )
-    participant $showname as $func_name <<($sdlConf_stereotype_icon_of_func ,$sdlConf_stereotype_color_of_component)>>
+    !if $func_name == $showname
+        + $showname()
+    !else
+        - $showname()
+    !endif
+
+    $call_by( $func_name )
+!endprocedure
+
+!procedure $callback_of_call_list( $call_graph )
+    $call_graph : %get_variable_value( $call_graph )
+
 !endprocedure
 
 !function $get_func_name_with_module( $func, $module )
     !return $module + "_____" + $func
 !endfunction
-
 
 !function $resolve_func_name( $func )
     !$currentFullName = $get_value_in_current_stack( "func"  )
@@ -293,7 +297,6 @@ hide unlinked
         !return $func
     !endif
 !endfunction
-
 
 !function $replace($old, $from, $to)
     !$list = %splitstr($old, $from)

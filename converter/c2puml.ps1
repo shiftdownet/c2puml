@@ -2,7 +2,7 @@
 #
 # 超ゴリ押し力技
 #
-Param([String]$codeRootPath = "./../demo/example", [String]$outPath = "./../demo/sample_code.iuml", [String]$codeEncoding = "Default")
+Param([String]$codeRootPath = "./../demo/example", [String]$outPath = "./../demo/sample_code.iuml", [String]$codeEncoding = "UTF8")
 
 class c2puml {
     [String]$convertedString = ""

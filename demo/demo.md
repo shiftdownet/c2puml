@@ -20,6 +20,9 @@ export_on_save:             # ファイル保存時の振る舞い
 
 本plantumlライブラリを用いて、以下のようなC言語を模したコードを記述します。
 
+ハンドコードしてもいいですが、[./../converter/c2puml.ps1](./../converter/c2puml.ps1) を利用することで、(精度は低いですが)自動的にCソースコードから以下のようなplantumlコードを生成することが可能です。
+
+
 [./sample_code.iuml](./sample_code.iuml)
 @import "./sample_code.iuml" {code_block=true class="line-numbers" as="c"}
 
@@ -34,6 +37,9 @@ export_on_save:             # ファイル保存時の振る舞い
 @startuml
 !include ./../iumlLibrary/Sequence_Diagram_Library.iuml
 !include ./sample_code.iuml
+$box()
+$call("_tWinMain")
+
 @enduml
 ```
 
@@ -48,6 +54,9 @@ export_on_save:             # ファイル保存時の振る舞い
 !include ./../iumlLibrary/Sequence_Diagram_Library.iuml
 !$sdlConf_display_level = "module"
 !include ./sample_code.iuml
+$box()
+$call("_tWinMain")
+
 @enduml
 ```
 ## 3.2. コンポーネントレベルの出力
@@ -59,6 +68,9 @@ export_on_save:             # ファイル保存時の振る舞い
 !include ./../iumlLibrary/Sequence_Diagram_Library.iuml
 !$sdlConf_display_level = "component"
 !include ./sample_code.iuml
+$box()
+$call("_tWinMain")
+
 @enduml
 ```
 
@@ -76,6 +88,9 @@ export_on_save:             # ファイル保存時の振る舞い
 !$sdlConf_display_level = "component"
 !$sdlConf_display_detail_unfocused_element_for_call = %true()
 !include ./sample_code.iuml
+$box()
+$call("_tWinMain")
+
 @enduml
 ```
 
@@ -91,6 +106,9 @@ export_on_save:             # ファイル保存時の振る舞い
 !$sdlConf_display_detail_unfocused_element_for_alt = %true()
 !$sdlConf_display_detail_unfocused_element_for_step = %true()
 !include ./sample_code.iuml
+$box()
+$call("_tWinMain")
+
 @enduml
 ```
 
@@ -109,6 +127,9 @@ Deviceコンポーネントをモジュールレベルまで詳細に表示し�
 !$sdlConf_display_lifeline_focused_element = "Device"
 !$sdlConf_display_lifeline_focused_element_level = "module"
 !include ./sample_code.iuml
+$box()
+$call("_tWinMain")
+
 @enduml
 ```
 
@@ -123,6 +144,9 @@ Deviceコンポーネントを関数レベルまで詳細に表示した例で�
 !$sdlConf_display_lifeline_focused_element = "Device"
 !$sdlConf_display_lifeline_focused_element_level = "func"
 !include ./sample_code.iuml
+$box()
+$call("_tWinMain")
+
 @enduml
 ```
 
@@ -138,13 +162,50 @@ Deviceコンポーネントを関数レベルまで詳細に表示した例で�
 !$sdlConf_display_lifeline_focused_element = "Keyboard"
 !$sdlConf_display_lifeline_focused_element_level = "func"
 !include ./sample_code.iuml
+$box()
+$call("_tWinMain")
+
 @enduml
 ```
 
-# 7. API仕様
+# 7. クラス図
+
+`Class_Diagram_Library.iuml` を読み込むことで、同じソースコードをインプットにしてクラス図を描画することが可能です。
+**本機能はベータ版です。**
+
+```plantuml {code_block=true class="line-numbers" }
+@startuml
+!include ./../iumlLibrary/Class_Diagram_Library.iuml
+!include ./sample_code.iuml
+$box()
+$call("_tWinMain")
+@enduml
+```
+
+
+# 7. アクティビティ図
+
+`Activity_Diagram_Library.iuml` を読み込むことで、同じソースコードをインプットにしてアクティビティ図を描画することが可能です。
+**本機能はベータ版です。**
+
+```plantuml {code_block=true class="line-numbers" }
+@startuml
+!include ./../iumlLibrary/Activity_Diagram_Library.iuml
+!include ./sample_code.iuml
+$box()
+$call("_tWinMain")
+@enduml
+```
+
+
+
+# 8. API仕様
 
 ごめんなさい、詳細の仕様は定義されていません。
 しかし、以下の `Provided interface` から概ね読み取ることが可能です。
+
+**インタフェース仕様は今後変更される可能性があります。**
+
 
 [./../iumlLibrary/Sequence_Diagram_Library.iuml](./../iumlLibrary/Sequence_Diagram_Library.iuml)
 @import "./../iumlLibrary/Sequence_Diagram_Library.iuml" {code_block=true class="line-numbers" as="pu"}
