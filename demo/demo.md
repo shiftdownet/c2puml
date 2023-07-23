@@ -171,7 +171,7 @@ $call("_tWinMain")
 # 7. クラス図
 
 `Class_Diagram_Library.iuml` を読み込むことで、同じソースコードをインプットにしてクラス図を描画することが可能です。
-**本機能はベータ版です。**
+**本機能はプロトタイプ版です。**
 
 ```plantuml {code_block=true class="line-numbers" }
 @startuml
@@ -186,7 +186,7 @@ $call("_tWinMain")
 # 7. アクティビティ図
 
 `Activity_Diagram_Library.iuml` を読み込むことで、同じソースコードをインプットにしてアクティビティ図を描画することが可能です。
-**本機能はベータ版です。**
+**本機能はプロトタイプ版です。**
 
 ```plantuml {code_block=true class="line-numbers" }
 @startuml
