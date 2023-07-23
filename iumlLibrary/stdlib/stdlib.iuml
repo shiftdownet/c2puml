@@ -1,0 +1,7 @@
+@startuml
+
+!include ./array.iuml
+!include ./stack.iuml
+!include ./string.iuml
+
+@enduml

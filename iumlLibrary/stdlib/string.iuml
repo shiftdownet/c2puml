@@ -1,0 +1,17 @@
+@startuml
+
+!function $replace($old, $from, $to)
+    !$list = %splitstr($old, $from)
+    !$new = ""
+    !$cnt = 0
+    !foreach $item in $list
+        !$cnt = $cnt + 1
+        !if $cnt == %size($list)
+            !$to = ""
+        !endif
+        !$new = $new + $item + $to
+    !endfor
+    !return $new
+!endfunction
+
+@enduml
