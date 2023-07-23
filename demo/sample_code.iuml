@@ -2,7 +2,7 @@
 '#==============================================================================================
 '# file : C:\workspace\c2puml\demo\example\system\core\lib\s_main.c
 '#==============================================================================================
-$start_component("lib")
+$start_component("system.core.lib")
 $start_module("s_main.c")
 
 '#----------------------------------------------------
@@ -10,11 +10,12 @@ $start_module("s_main.c")
 '#----------------------------------------------------
 $start_func("_tWinMain", "extern")
 !procedure $_tWinMain()
-    $step(" int a_modResult;")
     $step(" a_modResult = 0;")
     $call("l_voSetCmdLine")
     $call("l_voSetHndApp")
-    $if("( TRUE == l_boolInitSystem( a_hApp, a_modCmdShow ) ) && ( TRUE == g_boolHookInitApp() ) ")
+    $call("l_boolInitSystem")
+    $call("g_boolHookInitApp")
+    $if("( TRUE == a_boolInitSystem ) && ( TRUE == a_boolHookInitApp ) ")
         $call("l_modMsgLoop")
         $call("g_voHookTermApp")
     $else()
@@ -27,25 +28,20 @@ $start_func("_tWinMain", "extern")
 '#----------------------------------------------------
 $start_func("l_modMsgLoop", "static")
 !procedure $s_main_c_____l_modMsgLoop()
-    $step(" int a_modResult;")
-    $step(" MSG a_msg;")
-    $step(" BOOL a_bMsg;")
     $step(" a_modResult = 0;")
     $step(" a_bMsg = TRUE;")
     $while("a_bMsg == TRUE ")
-        $switch("(int)GetMessage( &a_msg, NULL, 0, 0 ) ")
+        $call("GetMessage")
+        $switch("message ")
         $case("L_MOD_GM_FAILURE")
             $step(" a_bMsg = FALSE;")
-            $step(" break;")
         $case("L_MOD_GM_WM_QUIT")
             $step(" a_bMsg = FALSE;")
             $step(" a_modResult = (int)a_msg.wParam;")
-            $step(" break;")
         $default()
             $step(" a_bMsg = TRUE;")
             $call("TranslateMessage")
             $call("DispatchMessage")
-            $step(" break;")
         $endswitch()
     $endwhile()
     $return("a_modResult")
@@ -56,10 +52,9 @@ $start_func("l_modMsgLoop", "static")
 '#----------------------------------------------------
 $start_func("l_boolInitSystem", "static")
 !procedure $s_main_c_____l_boolInitSystem()
-    $step(" BOOL a_bInitSystem;")
-    $step(" HWND a_hWnd;")
     $step(" a_bInitSystem = FALSE;")
-    $if("g_atomRegisterWcex( a_hApp ) != 0 ")
+    $call("g_atomRegisterWcex")
+    $if("a_result != 0 ")
         $call("g_hwndCreateWindow")
         $if("a_hWnd != NULL ")
             $step(" a_bInitSystem = TRUE;")
@@ -76,7 +71,7 @@ $start_func("l_boolInitSystem", "static")
 '#==============================================================================================
 '# file : C:\workspace\c2puml\demo\example\system\core\user\s_init.c
 '#==============================================================================================
-$start_component("user")
+$start_component("system.core.user")
 $start_module("s_init.c")
 
 '#----------------------------------------------------
@@ -84,8 +79,6 @@ $start_module("s_init.c")
 '#----------------------------------------------------
 $start_func("g_atomRegisterWcex", "extern")
 !procedure $g_atomRegisterWcex()
-    $step(" WNDCLASSEX a_wcex;")
-    $step(" ATOM a_atomResult;")
     $call("sizeof")
     $step(" a_wcex.style = CS_HREDRAW | CS_VREDRAW;")
     $step(" a_wcex.lpfnWndProc = (WNDPROC)&g_lrWndProc;")
@@ -107,7 +100,6 @@ $start_func("g_atomRegisterWcex", "extern")
 '#----------------------------------------------------
 $start_func("g_hwndCreateWindow", "extern")
 !procedure $g_hwndCreateWindow()
-    $step(" HWND a_hWnd;")
     $call("CreateWindowEx")
     $return("a_hWnd")
 !endprocedure
@@ -116,7 +108,7 @@ $start_func("g_hwndCreateWindow", "extern")
 '#==============================================================================================
 '# file : C:\workspace\c2puml\demo\example\system\core\user\s_proc.c
 '#==============================================================================================
-$start_component("user")
+$start_component("system.core.user")
 $start_module("s_proc.c")
 
 '#----------------------------------------------------
@@ -139,7 +131,7 @@ $start_func("g_lrWndProcEctl", "extern")
 '#==============================================================================================
 '# file : C:\workspace\c2puml\demo\example\system\core\user\s_sys_info.c
 '#==============================================================================================
-$start_component("user")
+$start_component("system.core.user")
 $start_module("s_sys_info.c")
 
 '#----------------------------------------------------
@@ -178,7 +170,7 @@ $start_func("l_hInstGetHndApp", "extern")
 '#==============================================================================================
 '# file : C:\workspace\c2puml\demo\example\system\hook\lib\s_hook_exe.c
 '#==============================================================================================
-$start_component("lib")
+$start_component("system.hook.lib")
 $start_module("s_hook_exe.c")
 
 '#----------------------------------------------------
@@ -186,17 +178,13 @@ $start_module("s_hook_exe.c")
 '#----------------------------------------------------
 $start_func("g_lrExeHook", "extern")
 !procedure $g_lrExeHook()
-    $step(" lrCallHook a_fptrHook;")
-    $step(" xn_hook_prm a_prmHook;")
-    $step(" LRESULT a_lrResult;")
-    $step(" const xn_hook_info_tbl * a_hookInfoTbl;")
     $step(" a_prmHook.m_hwnd = a_hwnd;")
     $step(" a_prmHook.m_msg = a_msg;")
     $step(" a_prmHook.m_wparam = a_wparam;")
     $step(" a_prmHook.m_lparam = a_lparam;")
     $call("g_hooktblGet")
     $call("l_hookGet")
-    $step(" a_lrResult = (*a_fptrHook)( &a_prmHook );")
+    $call("a_fptrHook")
     $return("a_lrResult")
 !endprocedure
 
@@ -205,9 +193,6 @@ $start_func("g_lrExeHook", "extern")
 '#----------------------------------------------------
 $start_func("l_hookGet", "static")
 !procedure $s_hook_exe_c_____l_hookGet()
-    $step(" UINT a_cnt;")
-    $step(" lrCallHook a_fptrHook;")
-    $step(" size_t a_lenTbl;")
     $step(" a_fptrHook = NULL;")
     $for("a_cnt = 0; a_cnt < a_hookInfoTbl->m_len; a_cnt++ ")
         $if("a_hookInfoTbl->m_tbl[ a_cnt ].m_wndMsg == a_prmHook->m_msg ")
@@ -230,7 +215,7 @@ $start_func("l_hookGet", "static")
 '#==============================================================================================
 '# file : C:\workspace\c2puml\demo\example\system\hook\user\s_user_hook_cmn.c
 '#==============================================================================================
-$start_component("user")
+$start_component("system.hook.user")
 $start_module("s_user_hook_cmn.c")
 
 '#----------------------------------------------------
@@ -253,7 +238,8 @@ $start_func("g_voHookTermApp", "extern")
 '#----------------------------------------------------
 $start_func("g_lrHookDefWindowProc", "extern")
 !procedure $g_lrHookDefWindowProc()
-    $return("DefWindowProc( a_prmHook->m_hwnd, a_prmHook->m_msg, a_prmHook->m_wparam, a_prmHook->m_lparam )")
+    $call("DefWindowProc")
+    $return("a_lrResult")
 !endprocedure
 
 '#----------------------------------------------------
@@ -261,8 +247,6 @@ $start_func("g_lrHookDefWindowProc", "extern")
 '#----------------------------------------------------
 $start_func("g_lrHookParentWindowProc", "extern")
 !procedure $g_lrHookParentWindowProc()
-    $step(" WNDPROC a_wproc;")
-    $step(" LRESULT a_lrResult;")
     $call("GetClassLongPtr")
     $if("a_wproc == 0 ")
         $call("g_lrHookDefWindowProc")
@@ -276,7 +260,7 @@ $start_func("g_lrHookParentWindowProc", "extern")
 '#==============================================================================================
 '# file : C:\workspace\c2puml\demo\example\system\hook\user\s_user_hook_main.c
 '#==============================================================================================
-$start_component("user")
+$start_component("system.hook.user")
 $start_module("s_user_hook_main.c")
 
 '#----------------------------------------------------
@@ -285,7 +269,8 @@ $start_module("s_user_hook_main.c")
 $start_func("g_lrHookMainWM_DESTROY", "extern")
 !procedure $g_lrHookMainWM_DESTROY()
     $call("PostQuitMessage")
-    $return("g_lrHookDefWindowProc( a_prmHook )")
+    $call("g_lrHookDefWindowProc")
+    $return("a_lrResult")
 !endprocedure
 
 '#----------------------------------------------------
@@ -293,14 +278,15 @@ $start_func("g_lrHookMainWM_DESTROY", "extern")
 '#----------------------------------------------------
 $start_func("g_lrHookMainWM_CLOSE", "extern")
 !procedure $g_lrHookMainWM_CLOSE()
-    $return("g_lrHookDefWindowProc( a_prmHook )")
+    $call("g_lrHookDefWindowProc")
+    $return("a_lrResult")
 !endprocedure
 
 
 '#==============================================================================================
 '# file : C:\workspace\c2puml\demo\example\system\hook\user\s_user_hook_tbl.c
 '#==============================================================================================
-$start_component("user")
+$start_component("system.hook.user")
 $start_module("s_user_hook_tbl.c")
 
 '#----------------------------------------------------
@@ -308,8 +294,6 @@ $start_module("s_user_hook_tbl.c")
 '#----------------------------------------------------
 $start_func("g_hooktblGet", "extern")
 !procedure $g_hooktblGet()
-    $step(" UINT a_cnt;")
-    $step(" UINT a_idx;")
     $step(" a_idx = L_DAT_ERR_TABLE_SEARCH;")
     $for("a_cnt = L_IDX_MSG_HOOK_NORMAL_START; a_cnt < L_IDX_MSG_HOOK_MAX; a_cnt++ ")
         $if("l_hookinfoTbls[a_cnt].m_wndproc == a_wndproc ")
@@ -325,7 +309,7 @@ $start_func("g_hooktblGet", "extern")
 !endprocedure
 
 
-' $box()
+' $display_outline()
 ' $call("EntryPoint")
 @enduml
 

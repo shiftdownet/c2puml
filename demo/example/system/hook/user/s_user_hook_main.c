@@ -49,8 +49,10 @@
 LRESULT g_lrHookMainWM_DESTROY( xn_hook_prm_ptr a_prmHook )
 {
 /*****↓↓↓ユーザー編集領域↓↓↓*****/
+	LRESULT a_lrResult;
 	PostQuitMessage( 0 );
-	return g_lrHookDefWindowProc( a_prmHook );
+	a_lrResult = g_lrHookDefWindowProc( a_prmHook );
+	return a_lrResult;
 /*****↑↑↑ユーザー編集領域↑↑↑*****/
 }
 
@@ -66,7 +68,9 @@ LRESULT g_lrHookMainWM_DESTROY( xn_hook_prm_ptr a_prmHook )
 LRESULT g_lrHookMainWM_CLOSE( xn_hook_prm_ptr a_prmHook )
 {
 /*****↓↓↓ユーザー編集領域↓↓↓*****/
-	return g_lrHookDefWindowProc( a_prmHook );
+	LRESULT a_lrResult;
+	a_lrResult = g_lrHookDefWindowProc( a_prmHook );
+	return a_lrResult;
 /*****↑↑↑ユーザー編集領域↑↑↑*****/
 }
 

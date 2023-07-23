@@ -10,17 +10,13 @@ hide unlinked
 '#=============================================================================
 '# include modules
 '#=============================================================================
-' 配列構造を実現するライブラリ
-!include ./array.iuml
-
-' スタック構造を実現するライブラリ
-!include ./stack.iuml
+!include ./stdlib/stdlib.iuml
 
 ' 描画対象のオブジェクトを選択するライブラリ
-!include ./select_object.iuml
+!include ./common/select_object.iuml
 
 ' plantumlの構文に従ってテキストを生成するライブラリ
-!include ./sdl_plantuml.iuml
+!include ./sequence/sdl_plantuml.iuml
 
 '#=============================================================================
 '# Provided interfaces
@@ -191,7 +187,7 @@ hide unlinked
 !endprocedure
 
 ' $set_xxx_of の設定に基づいて boxを描画する
-!procedure $box()
+!procedure $display_outline()
     participant $sdlConf_entry_point
     $iterate_array( "component_list", "$callback_of_component_list" )
     '$iterate_array( "module_list", "$callback_of_module_list" )
@@ -207,15 +203,15 @@ hide unlinked
 '#      func ... 関数レベル
 '#      module ... モジュールレベル
 '#      component ... コンポーネントレベル
-!$sdlConf_display_level = "func"
+!$iumlLib_display_level = "func"
 
-'# $sdlConf_display_level が func以外に設定されている時でも、ここで指定したエレメントは個別のライフラインとして描画します
+'# $iumlLib_display_level が func以外に設定されている時でも、ここで指定したエレメントは個別のライフラインとして描画します
 !$sdlConf_display_lifeline_focused_element = "not specified"
 
 '# $sdlConf_display_lifeline_focused_element で componentが指定されているときに、描画するライフラインの粒度を指定します( func or module が指定可能です )
 !$sdlConf_display_lifeline_focused_element_level = "not specified"
 
-'# $sdlConf_display_level が func以外に設定されている時、sdlConf_display_lifeline_focused_elementでフォーカスされていないエレメントを詳細に描画するか選択できます。
+'# $iumlLib_display_level が func以外に設定されている時、sdlConf_display_lifeline_focused_elementでフォーカスされていないエレメントを詳細に描画するか選択できます。
 '# 1. call
 !$sdlConf_display_detail_unfocused_element_for_call = %false()
 '# 2. alt
@@ -235,29 +231,29 @@ hide unlinked
 !$sdlConf_on_same_lifeline_return_is_displayed_as_string = %true()
 
 ' 関数のステレオタイプ(1文字)を指定できます
-!$sdlConf_stereotype_icon_of_func = "F"
+!$iumlLib_stereotype_icon_of_func = "F"
 
 ' モジュールのステレオタイプ(1文字)を指定できます
-!$sdlConf_stereotype_icon_of_module = "U"
+!$iumlLib_stereotype_icon_of_module = "U"
 
 ' コンポーネントのステレオタイプ(1文字)を指定できます
-!$sdlConf_stereotype_icon_of_component = "C"
+!$iumlLib_stereotype_icon_of_component = "C"
 
 ' 関数のステレオタイプの色を指定できます
-!$sdlConf_stereotype_color_of_func = "#ADD1B2"
+!$iumlLib_stereotype_color_of_func = "#ADD1B2"
 
 ' モジュールのステレオタイプの色を指定できます
-!$sdlConf_stereotype_color_of_module = "#FFF200"
+!$iumlLib_stereotype_color_of_module = "#FFF200"
 
 ' コンポーネントのステレオタイプの色を指定できます
-!$sdlConf_stereotype_color_of_component = "#B2ADD1"
+!$iumlLib_stereotype_color_of_component = "#B2ADD1"
 
 '#=============================================================================
 '# Internal functions
 '#=============================================================================
 !procedure $callback_of_component_list( $component_name )
     box $component_name #FloralWhite
-        participant $component_name <<($sdlConf_stereotype_icon_of_component, $sdlConf_stereotype_color_of_func)>>
+        participant $component_name <<($iumlLib_stereotype_icon_of_component, $iumlLib_stereotype_color_of_func)>>
         $iterate_array( "module_list_of_" + $component_name , "$callback_of_module_list_from_component" )
     end box
 !endprocedure
@@ -266,14 +262,14 @@ hide unlinked
     '!$module_name = $replace($module_name, ".", "_")
     %set_variable_value("box_current_value", $module_name )
     box $module_name #WhiteSmoke
-        participant $module_name <<($sdlConf_stereotype_icon_of_module,$sdlConf_stereotype_color_of_module)>>
+        participant $module_name <<($iumlLib_stereotype_icon_of_module,$iumlLib_stereotype_color_of_module)>>
         $iterate_array( "func_list_of_" + $module_name , "$callback_of_func_list_from_module" )
     end box
 !endprocedure
 
 !procedure $callback_of_func_list_from_module( $func_name )
     !$showname = %get_variable_value($func_name + ".showname" )
-    participant $showname as $func_name <<($sdlConf_stereotype_icon_of_func ,$sdlConf_stereotype_color_of_component)>>
+    participant $showname as $func_name <<($iumlLib_stereotype_icon_of_func ,$iumlLib_stereotype_color_of_component)>>
 !endprocedure
 
 !function $get_func_name_with_module( $func, $module )
@@ -292,21 +288,6 @@ hide unlinked
     !else
         !return $func
     !endif
-!endfunction
-
-
-!function $replace($old, $from, $to)
-    !$list = %splitstr($old, $from)
-    !$new = ""
-    !$cnt = 0
-    !foreach $item in $list
-        !$cnt = $cnt + 1
-        !if $cnt == %size($list)
-            !$to = ""
-        !endif
-        !$new = $new + $item + $to
-    !endfor
-    !return $new
 !endfunction
 
 @enduml

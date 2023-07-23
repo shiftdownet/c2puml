@@ -41,7 +41,7 @@ export_on_save:             # ファイル保存時の振る舞い
 @startuml
 !include ./../iumlLibrary/Sequence_Diagram_Library.iuml
 !include ./sample_code.iuml
-$box()
+$display_outline()
 $call("_tWinMain")
 
 @enduml
@@ -56,9 +56,9 @@ $call("_tWinMain")
 ```plantuml {code_block=true class="line-numbers" }
 @startuml
 !include ./../iumlLibrary/Sequence_Diagram_Library.iuml
-!$sdlConf_display_level = "module"
+!$iumlLib_display_level = "module"
 !include ./sample_code.iuml
-$box()
+$display_outline()
 $call("_tWinMain")
 
 @enduml
@@ -71,9 +71,9 @@ $call("_tWinMain")
 ```plantuml {code_block=true class="line-numbers" }
 @startuml
 !include ./../iumlLibrary/Sequence_Diagram_Library.iuml
-!$sdlConf_display_level = "component"
+!$iumlLib_display_level = "component"
 !include ./sample_code.iuml
-$box()
+$display_outline()
 $call("_tWinMain")
 
 @enduml
@@ -90,10 +90,10 @@ $call("_tWinMain")
 ```plantuml {code_block=true class="line-numbers" }
 @startuml
 !include ./../iumlLibrary/Sequence_Diagram_Library.iuml
-!$sdlConf_display_level = "component"
+!$iumlLib_display_level = "component"
 !$sdlConf_display_detail_unfocused_element_for_call = %true()
 !include ./sample_code.iuml
-$box()
+$display_outline()
 $call("_tWinMain")
 
 @enduml
@@ -106,12 +106,12 @@ $call("_tWinMain")
 ```plantuml {code_block=true class="line-numbers" }
 @startuml
 !include ./../iumlLibrary/Sequence_Diagram_Library.iuml
-!$sdlConf_display_level = "component"
+!$iumlLib_display_level = "component"
 !$sdlConf_display_detail_unfocused_element_for_loop = %true()
 !$sdlConf_display_detail_unfocused_element_for_alt = %true()
 !$sdlConf_display_detail_unfocused_element_for_step = %true()
 !include ./sample_code.iuml
-$box()
+$display_outline()
 $call("_tWinMain")
 
 @enduml
@@ -128,11 +128,11 @@ userコンポーネントをモジュールレベルまで詳細に表示した�
 ```plantuml {code_block=true class="line-numbers" }
 @startuml
 !include ./../iumlLibrary/Sequence_Diagram_Library.iuml
-!$sdlConf_display_level = "component"
-!$sdlConf_display_lifeline_focused_element = "user"
+!$iumlLib_display_level = "component"
+!$sdlConf_display_lifeline_focused_element = "system.core.user"
 !$sdlConf_display_lifeline_focused_element_level = "module"
 !include ./sample_code.iuml
-$box()
+$display_outline()
 $call("_tWinMain")
 
 @enduml
@@ -145,11 +145,11 @@ userコンポーネントを関数レベルまで詳細に表示した例です�
 ```plantuml {code_block=true class="line-numbers" }
 @startuml
 !include ./../iumlLibrary/Sequence_Diagram_Library.iuml
-!$sdlConf_display_level = "component"
-!$sdlConf_display_lifeline_focused_element = "user"
+!$iumlLib_display_level = "component"
+!$sdlConf_display_lifeline_focused_element = "system.core.user"
 !$sdlConf_display_lifeline_focused_element_level = "func"
 !include ./sample_code.iuml
-$box()
+$display_outline()
 $call("_tWinMain")
 
 @enduml
@@ -163,11 +163,11 @@ $call("_tWinMain")
 @startuml
 !include ./../iumlLibrary/Sequence_Diagram_Library.iuml
 !$sdlConf_display_detail_unfocused_element_for_call = %true()
-!$sdlConf_display_level = "component"
-!$sdlConf_display_lifeline_focused_element = "user"
+!$iumlLib_display_level = "component"
+!$sdlConf_display_lifeline_focused_element = "system.core.user"
 !$sdlConf_display_lifeline_focused_element_level = "func"
 !include ./sample_code.iuml
-$box()
+$display_outline()
 $call("_tWinMain")
 
 @enduml
@@ -175,14 +175,30 @@ $call("_tWinMain")
 
 # 3. クラス図
 
+
 `Class_Diagram_Library.iuml` を読み込むことで、同じソースコードをインプットにしてクラス図を描画することが可能です。
 **本機能はプロトタイプ版です。**
+
+## 3.1. コンポーネントレベル
 
 ```plantuml {code_block=true class="line-numbers" }
 @startuml
 !include ./../iumlLibrary/Class_Diagram_Library.iuml
 !include ./sample_code.iuml
-$box()
+!$iumlLib_display_level = "component"
+$display_outline()
+$call("_tWinMain")
+@enduml
+```
+
+## 3.2. モジュールレベル
+
+```plantuml {code_block=true class="line-numbers" }
+@startuml
+!include ./../iumlLibrary/Class_Diagram_Library.iuml
+!include ./sample_code.iuml
+!$iumlLib_display_level = "module"
+$display_outline()
 $call("_tWinMain")
 @enduml
 ```
@@ -197,7 +213,9 @@ $call("_tWinMain")
 @startuml
 !include ./../iumlLibrary/Activity_Diagram_Library.iuml
 !include ./sample_code.iuml
-$box()
+!$iumlLib_display_level = "func"
+
+$display_outline()
 $call("_tWinMain")
 @enduml
 ```

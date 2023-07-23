@@ -13,14 +13,18 @@ class c2puml {
 
         $files = Get-ChildItem -Path $rootPath -Recurse -Filter "*.c"
         foreach ( $file in $files ) {
-            $parentDirName = Split-Path (Split-Path $file.FullName -Parent) -Leaf
+            $rootFullPath = Resolve-Path $rootPath
+            $parentDirName = ($file.FullName).Replace([String]$rootFullPath + "`\", "")
+            $parentDirName = $parentDirName.Replace("`\" + $file.Name, "")
+            $parentDirName = $parentDirName.Replace("`\", ".")
+            # $parentDirName = Split-Path (Split-Path $file.FullName -Parent) -Leaf
             $this.Write( "'#==============================================================================================")
             $this.Write( "'# file : $($file.FullName)")
             $this.Write( "'#==============================================================================================")
             $this.Write( "`$start_component(`"$parentDirName`")")
             $this.Write( "`$start_module(`"$($file.Name)`")")
-            $this.Write( "")
 
+            $this.Write( "")
             switch ( $codeEncoding ) {
                 "Default" {
                     $contents = Get-Content $file.FullName -Raw -Encoding Default
@@ -37,7 +41,7 @@ class c2puml {
             $this.Write( "")
         }
 
-        $this.Write("' `$box()")
+        $this.Write("' `$display_outline()")
         $this.Write("' `$call(`"EntryPoint`")")
 
         $this.Write("@enduml")
@@ -159,6 +163,9 @@ class c2puml {
                             elseif ( $line -match "(?<func>[a-zA-Z0-9_]+)\s*\((?<param>.*)\)\s*;" ) {
                                 $this.Write( ("`$call(`"{0}`")" -f $Matches["func"]) )
                             }
+                            elseif ( $line -match "\(\s*\*\s*(?<func>[a-zA-Z0-9_]+)\s*\)\s*\((?<param>.*)\)\s*;" ) {
+                                $this.Write( ("`$call(`"{0}`")" -f $Matches["func"]) )
+                            }
                             elseif ( $line -match "^\s*\`$") {
                                 $this.nest--
                                 $this.Write($line)
@@ -166,8 +173,10 @@ class c2puml {
                             }
                             elseif ( $line -match "^\s*$" ) {
                             }
-                            else {
+                            elseif ( $line -match "[=+-]" ) {
                                 $this.Write("`$step(`"$line`")")
+                            }
+                            else {
                             }
                         }
                     }

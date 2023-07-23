@@ -75,10 +75,11 @@ void g_voHookTermApp( void )
 /****************************************************************/
 LRESULT g_lrHookDefWindowProc( xn_hook_prm_ptr a_prmHook )
 {
-	return DefWindowProc( a_prmHook->m_hwnd,
+	LRESULT a_lrResult = DefWindowProc( a_prmHook->m_hwnd,
 						  a_prmHook->m_msg,
 						  a_prmHook->m_wparam,
 						  a_prmHook->m_lparam );
+	return a_lrResult;
 }
 
 /****************************************************************/

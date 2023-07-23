@@ -10,17 +10,10 @@
 '#=============================================================================
 '# include modules
 '#=============================================================================
-' 配列構造を実現するライブラリ
-!include ./array.iuml
-
-' スタック構造を実現するライブラリ
-!include ./stack.iuml
+!include ./stdlib/stdlib.iuml
 
 ' 描画対象のオブジェクトを選択するライブラリ
-!include ./select_object.iuml
-
-' plantumlの構文に従ってテキストを生成するライブラリ
-!include ./cdl_plantuml.iuml
+!include ./common/select_object.iuml
 
 '#=============================================================================
 '# Provided interfaces
@@ -56,9 +49,6 @@
     !$from_object = $get_from_object_()
     !$to_object = $get_to_object_( $to )
     !if $from_object != $to_object
-        !if $to_object == "A_Module"
-
-        !endif
         !$connection = $from_object + " -(0- " + $to_object
         !$message = "<font size=10>" + $message + "()\n"
         !if $array_has_specific_data("call_list", $connection) == %false()
@@ -186,7 +176,7 @@
 !endprocedure
 
 ' $set_xxx_of の設定に基づいて boxを描画する
-!procedure $box()
+!procedure $display_outline()
     $iterate_array( "component_list", "$callback_of_component_list" )
     $iterate_array( "call_list", "$callback_of_call_list" )
 
@@ -196,73 +186,53 @@
 '#-------------------------------------------------
 '# 描画方法を指定するAPI及びコンフィグ(ユーザplantumlコードから上書きしてください)
 '#-------------------------------------------------
-'# エントリポイント名を指定します
-!$sdlConf_entry_point = "Driver"
-
 '# 描画の粒度を指定します。
 '#      func ... 関数レベル
 '#      module ... モジュールレベル
 '#      component ... コンポーネントレベル
-!$sdlConf_display_level = "module"
-
-'# $sdlConf_display_level が func以外に設定されている時でも、ここで指定したエレメントは個別のライフラインとして描画します
-!$sdlConf_display_lifeline_focused_element = "not specified"
-
-'# $sdlConf_display_lifeline_focused_element で componentが指定されているときに、描画するライフラインの粒度を指定します( func or module が指定可能です )
-!$sdlConf_display_lifeline_focused_element_level = "not specified"
-
-'# $sdlConf_display_level が func以外に設定されている時、sdlConf_display_lifeline_focused_elementでフォーカスされていないエレメントを詳細に描画するか選択できます。
-'# 1. call
-!$sdlConf_display_detail_unfocused_element_for_call = %false()
-'# 2. alt
-!$sdlConf_display_detail_unfocused_element_for_alt = %false()
-'# 3. loop
-!$sdlConf_display_detail_unfocused_element_for_loop = %false()
-'# 3. step
-!$sdlConf_display_detail_unfocused_element_for_step = %false()
-
-' 空のreturnを描画するならtrueを設定してください
-!$sdlConf_display_void_return = %true()
-
-' 最初にreturnが現れた時点でライフラインをinactiveにする設定を有効にする場合trueを設定してください
-!$sdlConf_inactivate_in_first_return = %true()
-
-' 同じライフライン上の場合returnをメッセージ(矢印)ではなく文字列で表示する場合はtrueを設定してください
-!$sdlConf_on_same_lifeline_return_is_displayed_as_string = %true()
+!$iumlLib_display_level = "module"
 
 ' 関数のステレオタイプ(1文字)を指定できます
-!$sdlConf_stereotype_icon_of_func = "F"
+!$iumlLib_stereotype_icon_of_func = "F"
 
 ' モジュールのステレオタイプ(1文字)を指定できます
-!$sdlConf_stereotype_icon_of_module = "U"
+!$iumlLib_stereotype_icon_of_module = "U"
 
 ' コンポーネントのステレオタイプ(1文字)を指定できます
-!$sdlConf_stereotype_icon_of_component = "C"
+!$iumlLib_stereotype_icon_of_component = "C"
 
 ' 関数のステレオタイプの色を指定できます
-!$sdlConf_stereotype_color_of_func = "#ADD1B2"
+!$iumlLib_stereotype_color_of_func = "#ADD1B2"
 
 ' モジュールのステレオタイプの色を指定できます
-!$sdlConf_stereotype_color_of_module = "#FFF200"
+!$iumlLib_stereotype_color_of_module = "#FFF200"
 
 ' コンポーネントのステレオタイプの色を指定できます
-!$sdlConf_stereotype_color_of_component = "#B2ADD1"
+!$iumlLib_stereotype_color_of_component = "#B2ADD1"
 
 '#=============================================================================
 '# Internal functions
 '#=============================================================================
 !procedure $callback_of_component_list( $component_name )
-    package "$component_name"  {
-        $iterate_array( "module_list_of_" + $component_name , "$callback_of_module_list_from_component" )
+    !if $iumlLib_display_level == "component"
+        class $component_name <<($iumlLib_stereotype_icon_of_component,$iumlLib_stereotype_color_of_component)>> #WhiteSmoke {
+    !else
+        package "$component_name"  {
+    !endif
+    $iterate_array( "module_list_of_" + $component_name , "$callback_of_module_list_from_component" )
     }
 !endprocedure
 
 !procedure $callback_of_module_list_from_component( $module_name )
     '!$module_name = $replace($module_name, ".", "_")
     %set_variable_value("box_current_value", $module_name )
-    class $module_name <<($sdlConf_stereotype_icon_of_module,$sdlConf_stereotype_color_of_module)>> #WhiteSmoke {
-        $iterate_array( "func_list_of_" + $module_name , "$callback_of_func_list_from_module" )
-    }
+    !if $iumlLib_display_level == "module"
+        class $module_name <<($iumlLib_stereotype_icon_of_module,$iumlLib_stereotype_color_of_module)>> #WhiteSmoke {
+    !endif
+    $iterate_array( "func_list_of_" + $module_name , "$callback_of_func_list_from_module" )
+    !if $iumlLib_display_level == "module"
+        }
+    !endif
 !endprocedure
 
 !procedure $callback_of_func_list_from_module( $func_name )
@@ -296,20 +266,6 @@
     !else
         !return $func
     !endif
-!endfunction
-
-!function $replace($old, $from, $to)
-    !$list = %splitstr($old, $from)
-    !$new = ""
-    !$cnt = 0
-    !foreach $item in $list
-        !$cnt = $cnt + 1
-        !if $cnt == %size($list)
-            !$to = ""
-        !endif
-        !$new = $new + $item + $to
-    !endfor
-    !return $new
 !endfunction
 
 @enduml

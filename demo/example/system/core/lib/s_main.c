@@ -69,8 +69,11 @@ int WINAPI _tWinMain(	HINSTANCE a_hApp,
 	l_voSetCmdLine( a_szCmdLine );
 	l_voSetHndApp( a_hApp );
 
-	if ( ( TRUE == l_boolInitSystem( a_hApp, a_modCmdShow ) ) &&
-		 ( TRUE == g_boolHookInitApp()						) )
+	bool a_boolInitSystem = l_boolInitSystem( a_hApp, a_modCmdShow );
+	bool a_boolHookInitApp = g_boolHookInitApp();
+
+	if ( ( TRUE == a_boolInitSystem ) &&
+		 ( TRUE == a_boolHookInitApp ) )
 		 														/* システムとアプリケーション初期化成功	*/
 	{
 		a_modResult = l_modMsgLoop();							/* Windowsメッセージループ				*/
@@ -105,7 +108,8 @@ static int l_modMsgLoop( void )
 	
 	while ( a_bMsg == TRUE ) 									/* 受信メッセージが失敗or終了までループ	*/
 	{
-		switch ( (int)GetMessage( &a_msg, NULL, 0, 0 ) )
+		int message = (int)GetMessage( &a_msg, NULL, 0, 0 );
+		switch ( message )
 		{
 		case L_MOD_GM_FAILURE:									/* GetMessageが失敗						*/
 			a_bMsg = FALSE;
@@ -152,7 +156,8 @@ static BOOL l_boolInitSystem(	const HINSTANCE	a_hApp,
 
 	a_bInitSystem	= FALSE;									/* 失敗で初期化							*/
 
-	if ( g_atomRegisterWcex( a_hApp ) != 0 )					/* ウィンドウクラス登録に成功			*/
+	ATOM a_result = g_atomRegisterWcex( a_hApp );
+	if ( a_result != 0 )					/* ウィンドウクラス登録に成功			*/
 	{
 		a_hWnd = g_hwndCreateWindow( a_hApp  );					/* ウィンドウ作成						*/
 		
