@@ -6,6 +6,7 @@
 ' 下記設定を前提にplantumlを生成しています
 !pragma teoz true
 hide unlinked
+skinparam SequenceLifeLineBackgroundColor LightSteelBlue
 
 '#=============================================================================
 '# include modules
@@ -31,6 +32,10 @@ hide unlinked
     !$fullname = $resolve_func_name( $func )
 
     ' 呼び出しを描画
+    !if %function_exists( "$" + $fullname ) == %false()
+        !$fullname = "External_Function"
+    !endif
+
     $generate_call_( $to=$fullname, $message=$func )
 
     ' スタックを進める
@@ -145,9 +150,10 @@ hide unlinked
 
 ' モジュールの開始を宣言する
 !procedure $start_module($module)
-    !$module = $replace($module, ".", "_")
-    %set_variable_value("current_module", $module )
-    $set_component_of($module, %get_variable_value("current_component"))
+    !$safety_module_name = $replace($module, ".", "_")
+    %set_variable_value("current_module", $safety_module_name )
+    %set_variable_value( $safety_module_name + ".formalname", $module )
+    $set_component_of($safety_module_name, %get_variable_value("current_component"))
 !endprocedure
 
 ' 関数の開始を宣言する
@@ -252,19 +258,29 @@ hide unlinked
 '# Internal functions
 '#=============================================================================
 !procedure $callback_of_component_list( $component_name )
+    !if ( ( $iumlLib_display_level != "component" ) || ( $sdlConf_display_lifeline_focused_element == $component_name ) )
     box $component_name #FloralWhite
+    !endif
         participant $component_name <<($iumlLib_stereotype_icon_of_component, $iumlLib_stereotype_color_of_func)>>
         $iterate_array( "module_list_of_" + $component_name , "$callback_of_module_list_from_component" )
+    !if ( ( $iumlLib_display_level != "component" ) || ( $sdlConf_display_lifeline_focused_element == $component_name ) )
     end box
+    !endif
 !endprocedure
 
 !procedure $callback_of_module_list_from_component( $module_name )
     '!$module_name = $replace($module_name, ".", "_")
+    !$formal_module_name = %get_variable_value( $module_name + ".formalname" )
     %set_variable_value("box_current_value", $module_name )
-    box $module_name #WhiteSmoke
-        participant $module_name <<($iumlLib_stereotype_icon_of_module,$iumlLib_stereotype_color_of_module)>>
+
+    !if ( $iumlLib_display_level != "module" && $sdlConf_display_lifeline_focused_element_level != "module" || ( $sdlConf_display_lifeline_focused_element == $formal_module_name ) )
+    box $formal_module_name #WhiteSmoke
+    !endif
+        participant $formal_module_name as $module_name <<($iumlLib_stereotype_icon_of_module,$iumlLib_stereotype_color_of_module)>>
         $iterate_array( "func_list_of_" + $module_name , "$callback_of_func_list_from_module" )
+    !if ( $iumlLib_display_level != "module" && $sdlConf_display_lifeline_focused_element_level != "module" || ( $sdlConf_display_lifeline_focused_element == $formal_module_name ) )
     end box
+    !endif
 !endprocedure
 
 !procedure $callback_of_func_list_from_module( $func_name )

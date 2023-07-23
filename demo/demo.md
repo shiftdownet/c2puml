@@ -117,11 +117,11 @@ $call("_tWinMain")
 @enduml
 ```
 
-## 2.4. 特定のコンポーネントのみ詳細表示
+## 2.4. 特定のエレメントのみ詳細表示
 
 一部のコンポーネントだけ詳しく表示することも可能です。
 
-## 2.5. モジュールレベルで表示
+### 2.4.1. 特定のコンポーネントをモジュールレベルで表示
 
 userコンポーネントをモジュールレベルまで詳細に表示した例です。
 
@@ -138,7 +138,7 @@ $call("_tWinMain")
 @enduml
 ```
 
-### 2.5.1. 関数レベルで表示
+### 2.4.2. 特定のコンポーネントを関数レベルで表示
 
 userコンポーネントを関数レベルまで詳細に表示した例です。
 
@@ -155,7 +155,27 @@ $call("_tWinMain")
 @enduml
 ```
 
-## 2.6. 組み合わせは自由
+
+### 2.4.3. 特定のモジュールを関数レベルで表示
+
+s_main.cを関数レベルまで詳細に表示した例です。
+**現バージョンではs_main.cが属するコンポーネントが描画されません。**
+
+```plantuml {code_block=true class="line-numbers" }
+@startuml
+!include ./../iumlLibrary/Sequence_Diagram_Library.iuml
+!$iumlLib_display_level = "component"
+!$sdlConf_display_lifeline_focused_element = "s_main_c"
+!$sdlConf_display_lifeline_focused_element_level = "func"
+!include ./sample_code.iuml
+$display_outline()
+$call("_tWinMain")
+
+@enduml
+```
+
+
+## 2.5. 組み合わせは自由
 
 以下の例では基本的にコンポーネントレベルで描画しますが、関数コールは省略せず、またuserモジュールだけは関数レベルで描画するように設定した例です。
 

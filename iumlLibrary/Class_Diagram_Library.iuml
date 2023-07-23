@@ -134,9 +134,10 @@
 
 ' モジュールの開始を宣言する
 !procedure $start_module($module)
-    !$module = $replace($module, ".", "_")
-    %set_variable_value("current_module", $module )
-    $set_component_of($module, %get_variable_value("current_component"))
+    !$safety_module_name = $replace($module, ".", "_")
+    %set_variable_value("current_module", $safety_module_name )
+    %set_variable_value( $safety_module_name + ".formalname", $module )
+    $set_component_of($safety_module_name, %get_variable_value("current_component"))
 !endprocedure
 
 ' 関数の開始を宣言する
@@ -225,9 +226,10 @@
 
 !procedure $callback_of_module_list_from_component( $module_name )
     '!$module_name = $replace($module_name, ".", "_")
+    !$formal_module_name = %get_variable_value( $module_name + ".formalname" )
     %set_variable_value("box_current_value", $module_name )
     !if $iumlLib_display_level == "module"
-        class $module_name <<($iumlLib_stereotype_icon_of_module,$iumlLib_stereotype_color_of_module)>> #WhiteSmoke {
+        class "$formal_module_name" as $module_name <<($iumlLib_stereotype_icon_of_module,$iumlLib_stereotype_color_of_module)>> #WhiteSmoke {
     !endif
     $iterate_array( "func_list_of_" + $module_name , "$callback_of_func_list_from_module" )
     !if $iumlLib_display_level == "module"
