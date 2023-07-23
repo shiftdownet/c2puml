@@ -77,7 +77,7 @@
     $activate_when_already_inactivated()
 
     !if $call_display_is_valid_( $to )
-        group "function : $message"
+        group "call $message"
     !endif
 !endprocedure
 
