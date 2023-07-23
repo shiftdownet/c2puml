@@ -26,7 +26,7 @@ skinparam SequenceLifeLineBackgroundColor LightSteelBlue
 '# 実装コードを定義するAPI
 '#-------------------------------------------------
 ' 関数をコールする
-!procedure $call( $func )
+!procedure $call( $func, $param="" )
 
     ' 関数名の解決を行う
     !$fullname = $resolve_func_name( $func )
@@ -36,7 +36,7 @@ skinparam SequenceLifeLineBackgroundColor LightSteelBlue
         !$fullname = "External_Function"
     !endif
 
-    $generate_call_( $to=$fullname, $message=$func )
+    $generate_call_( $to=$fullname, $message= "<b>" + $func + "</b>" + "(<font size=10>" + $param + "</font>)" )
 
     ' スタックを進める
     $inc_stack_()

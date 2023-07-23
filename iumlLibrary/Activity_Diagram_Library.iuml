@@ -25,13 +25,16 @@
 '# 実装コードを定義するAPI
 '#-------------------------------------------------
 ' 関数をコールする
-!procedure $call( $func )
+!procedure $call( $func, $param="" )
+    !if ( $stack_p_ == 0 )
+        start
+    !endif
 
     ' 関数名の解決を行う
     !$fullname = $resolve_func_name( $func )
 
     ' 呼び出しを描画
-    $generate_call_( $to=$fullname, $message=$func )
+    $generate_call_( $to=$fullname, $message= "<b>" + $func + "</b>" + "(<font size=10>" + $param + "</font>)" )
 
     ' スタックを進める
     $inc_stack_()
@@ -53,6 +56,10 @@
 
     ' スタックを戻す
     $dec_stack_()
+
+    !if ( $stack_p_ == 0 )
+        stop
+    !endif
 !endprocedure
 
 ' returnする
@@ -188,7 +195,6 @@
 
 ' $set_xxx_of の設定に基づいて boxを描画する
 !procedure $display_outline()
-    start
     $iterate_array( "component_list", "$callback_of_component_list" )
     '$iterate_array( "module_list", "$callback_of_module_list" )
 !endprocedure

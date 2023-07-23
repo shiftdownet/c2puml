@@ -77,14 +77,14 @@
     $activate_when_already_inactivated()
 
     !if $call_display_is_valid_( $to )
-        group "function : $message()"
+        group "function : $message"
     !endif
 !endprocedure
 
 ' returnを描画
 !procedure $generate_return_( $message = "" )
     !if $call_display_is_valid_( $get_value_in_prev_stack( "func" ) )
-        :$message;
+        :**return** $message;
         $set_value_in_current_stack( "return_called", %true() )
     !endif
 !endprocedure

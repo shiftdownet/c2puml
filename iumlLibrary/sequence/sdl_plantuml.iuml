@@ -78,7 +78,7 @@
     $activate_when_already_inactivated()
 
     !if $call_display_is_valid_( $to )
-        $get_from_object_() -> $get_to_object_( $to ) ++ : $message()
+        $get_from_object_() -> $get_to_object_( $to ) ++ : $message
     !endif
 !endprocedure
 

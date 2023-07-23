@@ -161,10 +161,10 @@ class c2puml {
                                 $this.Write( ("`$return(`"{0}`")" -f $Matches["ret"]) )
                             }
                             elseif ( $line -match "(?<func>[a-zA-Z0-9_]+)\s*\((?<param>.*)\)\s*;" ) {
-                                $this.Write( ("`$call(`"{0}`")" -f $Matches["func"]) )
+                                $this.Write( ("`$call(`"{0}`", `"{1}`")" -f $Matches["func"],$Matches["param"] ) )
                             }
                             elseif ( $line -match "\(\s*\*\s*(?<func>[a-zA-Z0-9_]+)\s*\)\s*\((?<param>.*)\)\s*;" ) {
-                                $this.Write( ("`$call(`"{0}`")" -f $Matches["func"]) )
+                                $this.Write( ("`$call(`"{0}`", `"{1}`")" -f $Matches["func"],$Matches["param"] ) )
                             }
                             elseif ( $line -match "^\s*\`$") {
                                 $this.nest--

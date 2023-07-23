@@ -35,13 +35,13 @@
 !endprocedure
 
 
-!procedure $call( $func )
+!procedure $call( $func, $param="" )
 
     ' 関数名の解決を行う
     !$fullname = $resolve_func_name( $func )
 
     ' 呼び出しを描画
-    $generate_call_( $to=$fullname, $message=$func )
+    $generate_call_( $to=$fullname, $message=$func + "()" )
 
 !endprocedure
 
@@ -50,7 +50,7 @@
     !$to_object = $get_to_object_( $to )
     !if $from_object != $to_object
         !$connection = $from_object + " -(0- " + $to_object
-        !$message = "<font size=10>" + $message + "()\n"
+        !$message = "<font size=10>" + $message + "\n"
         !if $array_has_specific_data("call_list", $connection) == %false()
             %set_variable_value( $connection, $message )
             $push_to( "call_list", $connection )

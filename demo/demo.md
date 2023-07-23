@@ -234,7 +234,6 @@ $call("_tWinMain")
 !include ./../iumlLibrary/Activity_Diagram_Library.iuml
 !include ./sample_code.iuml
 !$iumlLib_display_level = "func"
-
 $display_outline()
 $call("_tWinMain")
 @enduml
