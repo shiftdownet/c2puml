@@ -51,11 +51,18 @@
     !if $from_object != $to_object
         !$connection = $from_object + " -(0- " + $to_object
         !$message = "<font size=10>" + $message + "\n"
+        ' 初のコネクション
         !if $array_has_specific_data("call_list", $connection) == %false()
             %set_variable_value( $connection, $message )
             $push_to( "call_list", $connection )
+            $push_to( "call_list_in_" + $connection, $message )
+        ' 既存のコネクション
         !else
-            %set_variable_value( $connection, %get_variable_value( $connection ) + $message )
+            ' コネクション内の初のデータ
+            !if $array_has_specific_data( "call_list_in_" + $connection, $message ) == %false()
+                %set_variable_value( $connection, %get_variable_value( $connection ) + $message )
+                $push_to( "call_list_in_" + $connection, $message )
+            !endif
         !endif
     !endif
 !endprocedure
@@ -211,6 +218,8 @@
 ' コンポーネントのステレオタイプの色を指定できます
 !$iumlLib_stereotype_color_of_component = "#B2ADD1"
 
+!$cdl_show_private_method = %false()
+
 '#=============================================================================
 '# Internal functions
 '#=============================================================================
@@ -242,7 +251,9 @@
     !if $func_name == $showname
         + $showname()
     !else
-        - $showname()
+        !if $cdl_show_private_method == %true()
+            - $showname()
+        !endif
     !endif
 
     $call_by( $func_name )
